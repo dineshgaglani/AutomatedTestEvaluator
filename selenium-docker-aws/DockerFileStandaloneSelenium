@@ -1,0 +1,59 @@
+# define base image as python slim-buster.
+FROM python:3.7-slim-buster as base
+
+## start builder stage.
+
+# this is the first stage of the build.
+# it will install all requirements.
+FROM base as builder
+
+# install all packages for chromedriver: https://gist.github.com/varyonic/dea40abcf3dd891d204ef235c6e8dd79
+RUN apt-get update
+RUN apt-get install -y xinit xterm xvfb gnupg wget curl unzip x11vnc --no-install-recommends
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
+RUN apt-get update -y
+RUN apt-get install -y google-chrome-stable
+RUN CHROMEVER=$(google-chrome --version | grep -o "[^\.]*\.[^\.]*\.[^\.]*")
+# RUN DRIVERVER=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/#stable")
+RUN wget -q --continue -P /chromedriver "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chromedriver-linux64.zip"
+RUN unzip /chromedriver/chromedriver* -d /chromedriver
+
+# make the chromedriver executable and move it to default selenium path.
+RUN chmod +x /chromedriver/chromedriver*
+RUN mv /chromedriver /usr/bin/chromedriver
+
+# copy any python requirements file into the install directory and install all python requirements.
+COPY requirements.txt /requirements.txt
+RUN pip install --upgrade --no-cache-dir -r /requirements.txt
+# remove requirements file from container.
+RUN rm /requirements.txt 
+
+# copy the source code into /app and move into that directory.
+COPY src /app
+RUN chmod +x /app/run.sh
+
+# Expose VNC port
+EXPOSE 5900
+# Set VNC password
+RUN mkdir -p /root/.vnc && x11vnc -storepasswd vncpass /root/.vnc/passwd
+# Set up the X11 session
+RUN echo "xterm" > /root/.xinitrc
+# RUN echo "xterm" > /root/.Xauthority
+## end builder stage.
+
+#####
+
+## start base stage.
+
+# this is the image this is run.
+FROM builder
+
+# set the proxy addresses
+ENV URL "https://en.wikipedia.org/wiki/Main_Page"
+
+# default entry point.
+# CMD ["python", "--version"]
+# CMD ["./app/run.sh"]
+CMD ["x11vnc", "-forever", "-usepw", "-create", "-xkb", "-noxrecord", "-noxfixes", "-noxdamage", "-xrandr", "-geometry", "1024x768"]
+## end base stage.
