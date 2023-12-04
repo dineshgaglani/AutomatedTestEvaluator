@@ -39,3 +39,9 @@ Access shell in container using:
 ```python3 selenium-test.py```
 
 Make sure to change the chrome driver version (119.0.6045.105) if any errors occur on executing the selenium-test.py script
+
+Wikipedia tree test:
+The wikipedia tree test has nodes that will access wikipedia which branch into 2 scenarios, the file that has the config is diagrams/wikipedia.json. 
+These flows can be executed by running:
+```cd app```
+```python3 wikipedia-tree-selenium-test.py```
