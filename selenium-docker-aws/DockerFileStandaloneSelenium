@@ -31,7 +31,6 @@ RUN rm /requirements.txt
 
 # copy the source code into /app and move into that directory.
 COPY src /app
-RUN chmod +x /app/run.sh
 
 # Expose VNC port
 EXPOSE 5900
