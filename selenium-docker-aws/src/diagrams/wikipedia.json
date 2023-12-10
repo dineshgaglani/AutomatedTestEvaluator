@@ -21,7 +21,7 @@
                 "label": "Search",
                 "activationEligibility": "return True",
                 "activationEligibilityDescription": "Always true",
-                "activationTask": "searchBox = WebDriverWait(context['driver'], 10).until(EC.visibility_of_element_located((By.NAME, 'search'))); searchBox.send_keys(currTestData[0]); searchBox.send_keys(Keys.RETURN); return context['driver'].find_element(By.ID, 'firstHeading').text"
+                "activationTask": "searchBox = lambda: WebDriverWait(context['driver'], 10).until(EC.visibility_of_element_located((By.XPATH, '//input[@name=\"search\"]'))); searchBox().send_keys(currTestData[0]); searchBox().send_keys(Keys.RETURN); return context['driver'].find_element(By.ID, 'firstHeading').text"
             },
             "position": {
                 "x": 100,
