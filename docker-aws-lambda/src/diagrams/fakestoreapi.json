@@ -1,0 +1,97 @@
+{
+    "description": "3 cases and 2 test data ==> 1. call products endpoint, call products/1 enpoint || 2. call products endpoint, call products/2 endpoint || 3. call products endpoint, call products/3 endpoint. Testdata only has 1 and 2 and doesn't have 3",
+    "nodes": [
+        {
+            "id": "1",
+            "type": "input",
+            "data": {
+                "label": "Call Products endpoint",
+                "activationEligibility": "return True",
+                "activationEligibilityDescription": "Start of Test!!",
+                "activationTask": "return requests.get(context['baseUrl'] + \"/products\")"
+            },
+            "position": {
+                "x": 100,
+                "y": 125
+            }
+        },
+        {
+            "id": "2",
+            "type": "input",
+            "data": {
+                "label": "Call Products Id endpoint",
+                "activationEligibility": "return True",
+                "activationEligibilityDescription": "Always true",
+                "activationTask": "return requests.get(context['baseUrl'] + \"/products/\" + str(currTestData))"
+            },
+            "position": {
+                "x": 100,
+                "y": 125
+            }
+        },
+        {
+            "id": "3",
+            "type": "input",
+            "data": {
+                "label": "Product1 Called",
+                "activationEligibility": "return priorActionResults['Call Products Id endpoint'].json()['id'] == 1",
+                "activationEligibilityDescription": "Product 1 Called",
+                "activationTask": "print(\"Case 1 complete\"); return \"Case complete!\""
+            },
+            "position": {
+                "x": 100,
+                "y": 125
+            }
+        },
+        {
+            "id": "4",
+            "type": "input",
+            "data": {
+                "label": "Product2 Called",
+                "activationEligibility": "return priorActionResults['Call Products Id endpoint'].json()['id'] == 2",
+                "activationEligibilityDescription": "Product 2 called",
+                "activationTask": "print(\"Case 2 complete\"); return \"Case complete!\""
+            },
+            "position": {
+                "x": 100,
+                "y": 125
+            }
+        },
+        {
+            "id": "5",
+            "type": "input",
+            "data": {
+                "label": "Product3 Called",
+                "activationEligibility": "return priorActionResults['Call Products Id endpoint'].json()['id'] == 3",
+                "activationEligibilityDescription": "Product 3 called",
+                "activationTask": "print(\"Case 3 complete\"); return \"Case complete!\""
+            },
+            "position": {
+                "x": 100,
+                "y": 125
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "e1-2",
+            "source": "1",
+            "target": "2"
+        },
+        {
+            "id": "e2-3",
+            "source": "2",
+            "target": "3"
+        },
+        {
+            "id": "e2-4",
+            "source": "2",
+            "target": "4"
+        },
+        {
+            "id": "e2-5",
+            "source": "2",
+            "target": "5"
+        }
+    ]
+}
