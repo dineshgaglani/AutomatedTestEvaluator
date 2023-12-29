@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  python3.8
+
+  Sample SAM Template for selenium-app
+
+Globals:
+  Function:
+    Timeout: 60
+
+# Some notes - Every resource on aws needs to be assigned roles which contain permissions (policies) to interact with every other resource
+# Users needn't be assigned roles, they can be assigned policies directly
+# The resources don't just get these roles attached to them, they need to be able to 'assume' these roles, 
+# so every role has a section which provides which resource can assume that role.
+Resources:
+  
+  NodeExecutorLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+        Policies:
+          ManagedPolicyArns:
+            - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+            - PolicyName: NodeExecutorLambdaExecutionPolicy
+                PolicyDocument:
+                  Version: '2012-10-17'
+                  Statement:
+                    - Effect: Allow
+                      Action:
+                        - logs:CreateLogGroup
+                        - logs:CreateLogStream
+                        - logs:PutLogEvents
+                      Resource: arn:aws:logs:*:*:*
+  
+  NodeParserLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+        Policies:
+          ManagedPolicyArns:
+            - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+            - PolicyName: NodeParserLambdaExecutionPolicy
+                PolicyDocument:
+                  Version: '2012-10-17'
+                  Statement:
+                    - Effect: Allow
+                      Action:
+                        - logs:CreateLogGroup
+                        - logs:CreateLogStream
+                        - logs:PutLogEvents
+                      Resource: arn:aws:logs:*:*:*
+            - PolicyName: NodeParserStepFunctionExecutionPolicy
+                PolicyDocument:
+                  Version: '2012-10-17'
+                  Statement:
+                    - Effect: Allow
+                      Action:
+                        - "states:StartExecution",
+                      Resource: arn:aws:states:us-east-1:660023757134:stateMachine:*
+  
+  NodeExecutorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageUri: selenium-tree-aws-lambda
+      Role: !GetAtt NodeExecutorLambdaExecutionRole.Arn
+      ImageConfig:
+        Command: ['requests-test-demo/requests-test-node-executor-lambda.handler']
+      MemorySize:  1024
+      Timeout: 300
+      Architectures:
+        - x86_64
+    Metadata:
+      Dockerfile: 660023757134.dkr.ecr.us-east-1.amazonaws.com/docker-diagram:latest
+      DockerContext: '.'
+      DockerTag: python3.8-v1
+
+  NodeExecutorForwarderStateMachine:
+      Type: AWS::StepFunctions::StateMachine
+      Properties:
+        DefinitionString:
+          Fn::Sub:
+            - |
+              {
+                "Comment": "Parallel processing of items in a list using AWS Lambda",
+                "StartAt": "ParallelProcessing",
+                "States": {
+                  "ParallelProcessing": {
+                    "Type": "Map",
+                    "ItemsPath": "$.items",
+                    "Iterator": {
+                      "StartAt": "ProcessItem",
+                      "States": {
+                        "ProcessItem": {
+                          "Type": "Task",
+                          "Resource": 
+                            "Fn::GetAtt": [
+                              "NodeExecutorFunction",
+                              "Arn"
+                            ]
+                          "InputPath": "$",
+                          "ResultPath": "$.result",
+                          "End": true
+                        }
+                      }
+                    },
+                    "ResultPath": "$.result",
+                    "End": true
+                  }
+                }
+              }
+            - {}
+
+  NodeParserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageUri: selenium-tree-aws-lambda
+      Role: !GetAtt NodeParserLambdaExecutionRole.Arn
+      ImageConfig:
+        Command: ['requests-test-demo/requests-test-node-parser-lambda.handler']
+      MemorySize:  1024
+      Timeout: 300
+      Architectures:
+        - x86_64
+    Metadata:
+      Dockerfile: 660023757134.dkr.ecr.us-east-1.amazonaws.com/docker-diagram:latest
+      DockerContext: '.'
+      DockerTag: python3.8-v1
