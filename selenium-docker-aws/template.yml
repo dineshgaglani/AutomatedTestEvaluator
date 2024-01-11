@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  python3.8
+
+  Sample SAM Template for selenium-app
+
+Globals:
+  Function:
+    Timeout: 60
+
+# Some notes - Every resource on aws needs to be assigned roles which contain permissions (policies) to interact with every other resource
+# Users needn't be assigned roles, they can be assigned policies directly
+# The resources don't just get these roles attached to them, they need to be able to 'assume' these roles, 
+# so every role has a section which provides which resource can assume that role.
+Resources:
+  MyStateMachine:
+      Type: AWS::StepFunctions::StateMachine
+      Properties:
+        DefinitionString:
+          Fn::Sub:
+            - |
+              {
+                "Comment": "Parallel processing of items in a list using AWS Lambda",
+                "StartAt": "ParallelProcessing",
+                "States": {
+                  "ParallelProcessing": {
+                    "Type": "Map",
+                    "ItemsPath": "$.items",
+                    "Iterator": {
+                      "StartAt": "ProcessItem",
+                      "States": {
+                        "ProcessItem": {
+                          "Type": "Task",
+                          "Resource": "NodeExecutorFunction",
+                          "InputPath": "$",
+                          "ResultPath": "$.result",
+                          "End": true
+                        }
+                      }
+                    },
+                    "ResultPath": "$.result",
+                    "End": true
+                  }
+                }
+              }
+            - {}
+
+  NodeParserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageUri: selenium-tree-aws-lambda
+      ImageConfig:
+        Command: ['app/wikipedia-tree-parser-aws-lambda.handler']
+      MemorySize:  1024
+      Timeout: 300
+      Architectures:
+        - x86_64
+    Metadata:
+      Dockerfile: DockerFileAWS
+      DockerContext: '.'
+      DockerTag: python3.8-v1
+
+  NodeExecutorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageUri: selenium-tree-aws-lambda
+      ImageConfig:
+        Command: ['app/node-executor-aws-lambda.handler']
+      MemorySize:  1024
+      Timeout: 300
+      Architectures:
+        - x86_64
+      Events:
+        NodeExecutorFunctionApi:
+          Type: Api
+          Properties:
+            Path: /apicall
+            Method: post
+    Metadata:
+      Dockerfile: DockerFileAWS
+      DockerContext: '.'
+      DockerTag: python3.8-v1

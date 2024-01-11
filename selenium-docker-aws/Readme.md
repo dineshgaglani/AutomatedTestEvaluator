@@ -35,7 +35,7 @@ Get container id using:
 
 Access shell in container using:
 ```docker exec -it <container_id> sh```
-```cd app```
+```cd app/stand-alone-selenium```
 ```python3 selenium-test.py```
 
 Make sure to change the chrome driver version (119.0.6045.105) if any errors occur on executing the selenium-test.py script
@@ -43,5 +43,19 @@ Make sure to change the chrome driver version (119.0.6045.105) if any errors occ
 Wikipedia tree test:
 The wikipedia tree test has nodes that will access wikipedia which branch into 2 scenarios, the file that has the config is diagrams/wikipedia.json. 
 These flows can be executed by running:
-```cd app```
+```cd app/stand-alone-selenium```
 ```python3 wikipedia-tree-selenium-test.py```
+
+FOR LOCAL EXECUTION OF AWS LAMBDA SELENIUM
+
+1. Install the aws cli
+2. Install SAM cli
+3. Install step functions local
+```docker pull amazon/aws-stepfunctions-local```
+4. Create the docker image from the DockerFileAWS file (be sure to name the image selenium-tree-aws-lambda since this is the name used on the template file)
+```docker build -t selenium-tree-aws-lambda -f DockerFileAWS .```
+5. Start the aws-step-function-local passing in the step-function json (The json is only for local invocation of step function, the aws cloud uses the yml step function implementation)
+```docker run -p 8083:8083 amazon/aws-stepfunctions-local```
+```aws stepfunctions --endpoint http://localhost:8083 create-state-machine --name MyStateMachine --definition file://stepFunction.json --role-arn arn:aws:iam::012345678901:role/DummyRole```
+6. Run the template file with sam local (make sure that the current folder is the one with the template.yml file)
+```sam local invoke NodeParserFunction```

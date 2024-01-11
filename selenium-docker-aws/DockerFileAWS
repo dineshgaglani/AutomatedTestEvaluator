@@ -2,7 +2,7 @@
 FROM public.ecr.aws/lambda/python:3.8 as lambda-base
 
 COPY requirements.txt /tmp/
-COPY install-browsers.sh /tmp/
+COPY install_browsers.sh /tmp/
 
 # Install dependencies
 RUN yum install xz atk cups-libs gtk3 libXcomposite alsa-lib tar \
@@ -11,7 +11,7 @@ RUN yum install xz atk cups-libs gtk3 libXcomposite alsa-lib tar \
     xorg-x11-xauth dbus-glib dbus-glib-devel unzip bzip2 -y -q
 
 # Install Browsers
-RUN /usr/bin/bash /tmp/install-browsers.sh
+RUN /usr/bin/bash /tmp/install_browsers.sh
 
 # Install Python dependencies for function
 RUN pip install --upgrade pip -q
@@ -66,5 +66,8 @@ FROM lambda-base
 # Copy FFMpeg binary
 COPY --from=ffmpeg /ffmpeg_sources/bin/ffmpeg /usr/bin/
 
-# Copy function code
-COPY app.py /var/task/
+RUN mkdir app
+
+COPY src app
+
+CMD ["/app/wikipedia-tree-parser-aws-lambda.handler"]

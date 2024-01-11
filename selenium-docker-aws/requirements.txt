@@ -1,5 +1,0 @@
-pyvirtualdisplay
-awslambdaric
-selenium
-boto3
-graphviz

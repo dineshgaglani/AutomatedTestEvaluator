@@ -122,7 +122,7 @@ context['driver'] = driver
 #         startNode.isActivationEligible(singleTestData, context)
 #         startNode.activate(context, globalVisited)
 
-with open('./diagrams/wikipedia.json') as nodesJsonIOStr:
+with open('../diagrams/wikipedia.json') as nodesJsonIOStr:
     nodesJson = json.load(nodesJsonIOStr)
     startNode = createTreeFromJson(nodesJson, nodesJson)
 
