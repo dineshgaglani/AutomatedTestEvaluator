@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-function TestDataPane({ socketOpen }) {
+function TestDataPane({ socketOpen, setTestData }) {
     const [currentItem, setCurrentItem] = useState('');
     const [currentTestDataId, setCurrentTestDataId] = useState(1)
     const [list, setList] = useState([{ 'id': currentTestDataId, 'value': '', 'output': '' }]);
@@ -26,17 +26,18 @@ function TestDataPane({ socketOpen }) {
             //     // updatedList[index].output = event.target.value;
             //     // setList(updatedList);
             // };
-            setList((prevTestDataList) => {
-                console.log(`prevTestDataList : ${JSON.stringify(prevTestDataList)}`)
-                const newTestDataList = prevTestDataList.map(prevTestDataItem => {
-                    if([1, 3].includes(prevTestDataItem.id)) {
-                        return { ...prevTestDataItem, 'output': prevTestDataItem.id }
-                    } 
-                    return prevTestDataItem
-                })
+            
+            // setList((prevTestDataList) => {
+            //     console.log(`prevTestDataList : ${JSON.stringify(prevTestDataList)}`)
+            //     const newTestDataList = prevTestDataList.map(prevTestDataItem => {
+            //         if([1, 3].includes(prevTestDataItem.id)) {
+            //             return { ...prevTestDataItem, 'output': prevTestDataItem.id }
+            //         } 
+            //         return prevTestDataItem
+            //     })
 
-                return newTestDataList
-            })
+            //     return newTestDataList
+            // })
         }
     }, [socketOpen])
 
@@ -52,6 +53,9 @@ function TestDataPane({ socketOpen }) {
             setCurrentItem('');
             setShowCursor(true);
             setCursorIndex(list.length);
+
+            //This sets the test data on the diagram component
+            setTestData(list)
         }
     };
 

@@ -7,6 +7,7 @@ function App() {
 
   const [evaluateDiagramSocketOpen, setEvaluateDiagramSocketOpen] = useState(false)
   const [evaluateTestDataSocketOpen, setEvaluateTestDataSocketOpen] = useState(false)
+  const [testData, setTestData] = useState([])
 
   const handleEvaluateClick = () => {
     handleEvaluateDiagram()
@@ -26,8 +27,8 @@ function App() {
   return (
     <div style={{display: "flex" }}>
       <button style={{display: "top", height: '300px'}} onClick={handleEvaluateClick}>Evaluate Diagram with TestData</button>
-      <Diagram id="diagramPane" socketOpen={evaluateDiagramSocketOpen}></Diagram>
-      <TestDataPane id="testDataPane" socketOpen={evaluateTestDataSocketOpen} style={{width: '300px'}}></TestDataPane>
+      <Diagram id="diagramPane" socketOpen={evaluateDiagramSocketOpen} testData={testData}></Diagram>
+      <TestDataPane id="testDataPane" socketOpen={evaluateTestDataSocketOpen} style={{width: '300px'}} setTestData={setTestData}></TestDataPane>
     </div>
   );
 }

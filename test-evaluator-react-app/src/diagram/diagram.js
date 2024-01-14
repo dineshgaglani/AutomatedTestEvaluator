@@ -8,7 +8,7 @@ import TextUpdaterNode from '../nodes/TextNode.js';
 import initialNodes from '../nodes/allNodes'
 import initialEdges from '../edges/allEdges'
 
-function Diagram({ socketOpen }) {
+function Diagram({ socketOpen, testData }) {
 
   const initPosition = { 'x': 100, 'y': 150 }
   const [nodes, setNodes] = useState(initialNodes);
@@ -37,20 +37,22 @@ function Diagram({ socketOpen }) {
       //   // })
       // };
 
-      setNodes((prevNodes) => {
-          const newNodes = prevNodes.map(node => {
-            if(["1", "2", "3"].includes(node.id)) {
-              console.log(`Node to update: ${JSON.stringify(node)}`)
-              const changedStyle = {...node.style, 'backgroundColor': '#ff0e00'}
-              return {...node, 'style': changedStyle}
-            }
-            return node
-          })
+      // setNodes((prevNodes) => {
+      //   const newNodes = prevNodes.map(node => {
+      //     if (["1", "2", "3"].includes(node.id)) {
+      //       console.log(`Node to update: ${JSON.stringify(node)}`)
+      //       const changedStyle = { ...node.style, 'backgroundColor': '#ff0e00' }
+      //       return { ...node, 'style': changedStyle }
+      //     }
+      //     return node
+      //   })
 
-          return newNodes
-          
-        })
+      //   return newNodes
+      // })
 
+      console.log(`Nodes: ${JSON.stringify(nodes)}`)
+      console.log(`Edges: ${JSON.stringify(edges)}`)
+      console.log(`testData: ${JSON.stringify(testData)}`)
     }
   }, [socketOpen])
 

@@ -13,14 +13,18 @@ function TextUpdaterNode({ data, xPos, yPos }) {
 
   const onChangeNodeDescription = useCallback((evt) => {
     setNodeDescription(evt.target.value)
+    data["label"] = evt.target.value
+    console.log(`Node: ${JSON.stringify(data)}`)
   }, []);
 
   const onChangeActivationEligibility = useCallback((evt) => {
     setActivationEligibility(evt.target.value)
+    data["activationEligibility"] = evt.target.value
   }, []);
 
   const onChangeActivationTask = useCallback((evt) => {
     setActivationTask(evt.target.value)
+    data["activationTask"] = evt.target.value
   }, []);
 
   return (
