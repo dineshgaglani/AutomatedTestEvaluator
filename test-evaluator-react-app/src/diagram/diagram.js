@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import ReactFlow, { addEdge, applyEdgeChanges, applyNodeChanges } from 'reactflow';
 import { useCallback, useState, useMemo } from 'react';
 
+import axios from 'axios';
+
 import 'reactflow/dist/style.css';
 
 import TextUpdaterNode from '../nodes/TextNode.js';
@@ -18,6 +20,16 @@ function Diagram({ socketOpen, testData }) {
   useEffect(() => {
     if (socketOpen) {
       console.log('Socket open on Diagram')
+      const request = { nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]` }
+      console.log(`request: ${JSON.stringify(request)}`)
+
+      axios.post('https://1mw6gy3fj2.execute-api.us-east-1.amazonaws.com/evaluatediagram', request)
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
       // const ws = new WebSocket('wss://socketsbay.com/wss/v2/1/demo/');
 
       // ws.onopen = () => {
@@ -49,10 +61,6 @@ function Diagram({ socketOpen, testData }) {
 
       //   return newNodes
       // })
-
-      console.log(`Nodes: ${JSON.stringify(nodes)}`)
-      console.log(`Edges: ${JSON.stringify(edges)}`)
-      console.log(`testData: ${JSON.stringify(testData)}`)
     }
   }, [socketOpen])
 

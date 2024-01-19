@@ -14,6 +14,7 @@ function TextUpdaterNode({ data, xPos, yPos }) {
   const onChangeNodeDescription = useCallback((evt) => {
     setNodeDescription(evt.target.value)
     data["label"] = evt.target.value
+    data["activationEligibilityDescription"] = evt.target.value
     console.log(`Node: ${JSON.stringify(data)}`)
   }, []);
 

@@ -38,6 +38,16 @@ Resources:
                         - logs:CreateLogStream
                         - logs:PutLogEvents
                       Resource: arn:aws:logs:*:*:*
+                - PolicyName: NodeExecutorDDBRecorderPolicy
+                    PolicyDocument:
+                      Version: '2012-10-17'
+                      Statement:
+                        - Effect: Allow
+                        Action:
+                          - dynamodb:PutItem
+                          - dynamodb:UpdateItem
+                          - dynamodb:DeleteItem
+                        Resource: "arn:aws:dynamodb:us-east-1:660023757134:table/visited_nodes"
   
   NodeParserLambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -140,3 +150,7 @@ Resources:
       Dockerfile: 660023757134.dkr.ecr.us-east-1.amazonaws.com/docker-diagram:latest
       DockerContext: '.'
       DockerTag: python3.8-v1
+    events:
+      - http:
+          path: /evaluateDiagram
+          method: post

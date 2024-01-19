@@ -18,12 +18,20 @@ print('Updated sys.path:', sys.path)
 
 import nodeParser
 
+ # This function uses a file to parse nodes and is just for testing
 def parseFakeStoreApiNodes():
     diagrams_path = os.path.join(script_dir, '..', 'diagrams')
     with open(diagrams_path + '/fakestoreapi.json') as nodesJsonIOStr:
         nodesJson = json.load(nodesJsonIOStr)
         treeStartNode = nodeParser.createTreeFromJson(nodesJson, nodesJson)
         return treeStartNode
+
+# This function uses the actual request to parse nodes and edges and is being used in the application
+def parseFakeStoreNodesFromRequest(requestData):
+    # nodesJson = json.load(nodesArr)
+    # edgesJson = json.load(edgesArr)
+    treeStartNode = nodeParser.createTreeFromJson(requestData, requestData)
+    return treeStartNode
 
 def getTreeWithTestData(testData):
     fakeStoreApiNodes = parseFakeStoreApiNodes()
@@ -49,6 +57,3 @@ def executeFlow(flow, testData, context, globalVisited):
 #     print(flowWithTestData)
 #     executeFlow(flowWithTestData.get('flow'), flowWithTestData['testData'], context, globalVisited)
 # print('Stop execution')
-
-
-

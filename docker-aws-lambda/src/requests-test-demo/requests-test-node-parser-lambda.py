@@ -10,11 +10,16 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # Add the directory to sys.path
 sys.path.append(script_dir)
 
-from requestsTest import parseFakeStoreApiNodes
+from requestsTest import parseFakeStoreNodesFromRequest
 
 def handler(event, context):
-    fakeStoreApiTree = parseFakeStoreApiNodes()
-    testData = [1, 2]
+    # fakeStoreApiTree = parseFakeStoreApiNodes()
+    # testData = [1, 2]
+    print('event: ')
+    print(event)
+    requestData = json.loads(event.get('body'))
+    fakeStoreApiTree = parseFakeStoreNodesFromRequest(requestData)
+    testData = json.loads(requestData['testData'])
     pickledTreeWithTestData = []
     for singleTestData in testData:
         pickledTree = dill.dumps(fakeStoreApiTree)
