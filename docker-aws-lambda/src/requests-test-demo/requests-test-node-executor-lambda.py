@@ -3,6 +3,7 @@ import dill
 import os
 import sys
 import boto3
+import json
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -12,23 +13,50 @@ sys.path.append(script_dir)
 from requestsTest import executeFlow
 
 class GlobalVisitedDDBRecorder:
+    def setWebsocketConnection(self, connectionId, endpointUrl): 
+        self.api_gateway = boto3.client('apigatewaymanagementapi', endpoint_url=endpointUrl)
+        self.connectionId = connectionId
+
     def add(self, nodeToRecord):
         valToRecord = nodeToRecord.id
         print('Recording ' + str(valToRecord) + ' to global visited ')
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table('visited_nodes')
 
-        response = table.update_item(
+        ddbWriteResponse = table.update_item(
             Key={
                 'run_id': 'run1'
             },
             UpdateExpression='SET nodes_visited = list_append(nodes_visited, :value)',
             ExpressionAttributeValues={
                 ':value': [valToRecord]
-            }
+            })
+
+        print(ddbWriteResponse)
+
+        self.sendWsResponse()
+
+    def sendWsResponse(self):
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('visited_nodes')
+        
+        result = table.query(
+            KeyConditionExpression='run_id = :value',
+            ExpressionAttributeValues={':value': 'run1'}
         )
 
-        print(response)
+        print(f'dynamodb call result {json.dumps(result)}')
+        items = result.get('Items', [])
+        response_data = {
+            'data': items
+        }
+        print(f'sending response data {json.dumps(response_data)}')
+
+        self.api_gateway.post_to_connection(
+            ConnectionId=self.connectionId,
+            Data=json.dumps(response_data)
+        )
+
 
 def handler(event, context):
     globalVisited = GlobalVisitedDDBRecorder()
@@ -38,6 +66,12 @@ def handler(event, context):
     pickled_flow = base64.b64decode(base64_data)
     flow = dill.loads(pickled_flow)
 
+    connectionId = event.get('connectionId')
+    domain = event.get('domain')
+    stage = event.get('stage')
+    endpoint_url = f'https://{domain}/{stage}'
+    globalVisited.setWebsocketConnection(connectionId, endpoint_url)
+    
     try:
         executeFlow(flow, testData, context, globalVisited)
         return {'statusCode': 200, 'body': 'Execution completed successfully.'}

@@ -20,47 +20,55 @@ function Diagram({ socketOpen, testData }) {
   useEffect(() => {
     if (socketOpen) {
       console.log('Socket open on Diagram')
-      const request = { nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]` }
-      console.log(`request: ${JSON.stringify(request)}`)
+      // const request = { nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]` }
+      // console.log(`request: ${JSON.stringify(request)}`)
 
-      axios.post('https://1mw6gy3fj2.execute-api.us-east-1.amazonaws.com/evaluatediagram', request)
-        .then(function (response) {
-          console.log(response);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-      // const ws = new WebSocket('wss://socketsbay.com/wss/v2/1/demo/');
-
-      // ws.onopen = () => {
-      //   console.log('WebSocket connection established in Diagram.');
-      // };
-
-      // ws.onmessage = (event) => {
-      //   console.log(`event: ${JSON.stringify(event)} in Diagram`)
-      //   // setNodes((prevNodes) => {
-      //   //   let updatedNodes =  [...prevNodes]
-      //   //   let nodeToChange = updatedNodes.find(node => {
-      //   //     event.nodeId.includes(node.id)
-      //   //   })
-      //   //   nodeToChange.style.backgroundColor = '#ff0e00'
-
-      //   //   return updatedNodes
-      //   // })
-      // };
-
-      // setNodes((prevNodes) => {
-      //   const newNodes = prevNodes.map(node => {
-      //     if (["1", "2", "3"].includes(node.id)) {
-      //       console.log(`Node to update: ${JSON.stringify(node)}`)
-      //       const changedStyle = { ...node.style, 'backgroundColor': '#ff0e00' }
-      //       return { ...node, 'style': changedStyle }
-      //     }
-      //     return node
+      // axios.post('https://1mw6gy3fj2.execute-api.us-east-1.amazonaws.com/evaluatediagram', request)
+      //   .then(function (response) {
+      //     console.log(response);
       //   })
+      //   .catch(function (error) {
+      //     console.log(error);
+      //   });
+      const ws = new WebSocket('wss://0ig7g8kowd.execute-api.us-east-1.amazonaws.com/test/');
 
-      //   return newNodes
-      // })
+      const request = { action: 'evaluateDiagram', nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]` }
+      ws.onopen = () => {
+        console.log('WebSocket connection established in Diagram.')
+
+        ws.send(JSON.stringify(request))
+      };
+
+      ws.onmessage = (event) => {
+        // console.log(`event: ${event} in Diagram`)
+        const eventDataResponse = JSON.parse(event.data)
+        console.log(`All event data ${JSON.stringify(eventDataResponse)}`)
+        console.log(`event data 0: ${JSON.stringify(eventDataResponse.data[0])} in Diagram`)
+        const eventData = eventDataResponse.data[0]
+        setNodes((prevNodes) => {
+          const newNodes = prevNodes.map(node => {
+            if (eventData['nodes_visited'].includes(node.id)) {
+              console.log(`Node to update: ${JSON.stringify(node)}`)
+              const changedStyle = { ...node.style, 'backgroundColor': '#3bb143' }
+              return { ...node, 'style': changedStyle }
+            }
+            return node
+          })
+
+          return newNodes
+        })
+      };
+
+      ws.addEventListener('close', (event) => {
+        console.log('WebSocket connection closed:', event);
+      });
+  
+      // Clean up the WebSocket connection on component unmount
+      return () => {
+        ws.close();
+        socketOpen = false
+      };
+
     }
   }, [socketOpen])
 

@@ -48,6 +48,15 @@ Resources:
                           - dynamodb:UpdateItem
                           - dynamodb:DeleteItem
                         Resource: "arn:aws:dynamodb:us-east-1:660023757134:table/visited_nodes"
+                - PolicyName: NodeExecutorWsConnectionResponderPolicy
+                    PolicyDocument:
+                      Version: '2012-10-17'
+                      Statement:
+                        - Effect: Allow
+                        Action:
+                          - "execute-api:Invoke",
+                          - "execute-api:ManageConnections"
+                        Resource: "arn:aws:execute-api:us-east-1:660023757134:0ig7g8kowd/test/*"
   
   NodeParserLambdaExecutionRole:
     Type: AWS::IAM::Role
