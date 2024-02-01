@@ -10,7 +10,7 @@ import TextUpdaterNode from '../nodes/TextNode.js';
 import initialNodes from '../nodes/allNodes'
 import initialEdges from '../edges/allEdges'
 
-function Diagram({ socketOpen, testData }) {
+function Diagram({ socketOpen, testData, envData }) {
 
   const initPosition = { 'x': 100, 'y': 150 }
   const [nodes, setNodes] = useState(initialNodes);
@@ -20,7 +20,8 @@ function Diagram({ socketOpen, testData }) {
   useEffect(() => {
     if (socketOpen) {
       console.log('Socket open on Diagram')
-      // const request = { nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]` }
+      // HTTP Example
+      // const request = { action: 'evaluateDiagram', nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]`, envData: `${JSON.stringify(envData)}` }
       // console.log(`request: ${JSON.stringify(request)}`)
 
       // axios.post('https://1mw6gy3fj2.execute-api.us-east-1.amazonaws.com/evaluatediagram', request)
@@ -30,9 +31,11 @@ function Diagram({ socketOpen, testData }) {
       //   .catch(function (error) {
       //     console.log(error);
       //   });
+      
+      // Ws Example
       const ws = new WebSocket('wss://0ig7g8kowd.execute-api.us-east-1.amazonaws.com/test/');
 
-      const request = { action: 'evaluateDiagram', nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]` }
+      const request = { action: 'evaluateDiagram', nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]`, envData: `${JSON.stringify(envData)}` }
       ws.onopen = () => {
         console.log('WebSocket connection established in Diagram.')
 
@@ -68,6 +71,10 @@ function Diagram({ socketOpen, testData }) {
         ws.close();
         socketOpen = false
       };
+
+      // const request = { action: 'evaluateDiagram', nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]`, envData: `${JSON.stringify(envData)}` }
+      // console.log(`request to send: ${JSON.stringify(request)}`)
+
 
     }
   }, [socketOpen])

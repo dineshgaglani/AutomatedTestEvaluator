@@ -24,13 +24,14 @@ def handler(event, context):
     stage = event['requestContext']['stage']
     fakeStoreApiTree = parseFakeStoreNodesFromRequest(requestData)
     testData = json.loads(requestData['testData'])
+    envData = json.loads(requestData['envData'])
     pickledTreeWithTestData = []
     
     for singleTestData in testData:
         pickledTree = dill.dumps(fakeStoreApiTree)
         b64Tree = base64.b64encode(pickledTree).decode('utf-8')
         print(b64Tree)
-        pickledTreeWithTestData.append({ 'pickedTree': b64Tree, 'testData': singleTestData, 'connectionId': connectionId, 'domain': domain, 'stage': stage })
+        pickledTreeWithTestData.append({ 'pickedTree': b64Tree, 'testData': singleTestData, 'connectionId': connectionId, 'domain': domain, 'stage': stage, 'envData': envData })
     
     client = boto3.client('stepfunctions')
 

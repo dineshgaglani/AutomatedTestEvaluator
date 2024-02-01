@@ -18,6 +18,8 @@ class GlobalVisitedDDBRecorder:
         self.connectionId = connectionId
 
     def add(self, nodeToRecord):
+        print(f'nodeDescription: {str(nodeToRecord.description)}, nodeTestData: {str(nodeToRecord.currTestData)}')
+
         valToRecord = nodeToRecord.id
         print('Recording ' + str(valToRecord) + ' to global visited ')
         dynamodb = boto3.resource('dynamodb')
@@ -60,11 +62,20 @@ class GlobalVisitedDDBRecorder:
 
 def handler(event, context):
     globalVisited = GlobalVisitedDDBRecorder()
-    context = { 'baseUrl': 'https://fakestoreapi.com' }
+    # appContext = { 'baseUrl': 'https://fakestoreapi.com' }
     base64_data = event.get('pickedTree')
     testData = event.get('testData')
+
     pickled_flow = base64.b64decode(base64_data)
     flow = dill.loads(pickled_flow)
+
+    envData = event.get('envData')
+    print(f'envData: envData[0]["key"] {envData[0]["key"]}, envData[0]["value"] {envData[0]["value"]}')
+    appContext = {}
+    for keyVal in envData:
+        print(f'envData: keyVal["key"] {keyVal["key"]}, keyVal["value"] {keyVal["value"]}')
+        appContext[keyVal['key']] = keyVal['value']
+    print(f'appContext: {json.dumps(appContext)}')
 
     connectionId = event.get('connectionId')
     domain = event.get('domain')
@@ -73,7 +84,7 @@ def handler(event, context):
     globalVisited.setWebsocketConnection(connectionId, endpoint_url)
     
     try:
-        executeFlow(flow, testData, context, globalVisited)
+        executeFlow(flow, testData, appContext, globalVisited)
         return {'statusCode': 200, 'body': 'Execution completed successfully.'}
     except Exception as e:
         print(f'Error starting execution: {e}')
