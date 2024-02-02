@@ -8,7 +8,7 @@
                 "label": "Call Products endpoint",
                 "activationEligibility": "return True",
                 "activationEligibilityDescription": "Start of Test!!",
-                "activationTask": "return requests.get(context['baseUrl'] + \"/products\")"
+                "activationTask": "productsResp = requests.get(context['baseUrl'] + \"/products\"); return productsResp.json()"
             },
             "position": {
                 "x": 100,
@@ -22,7 +22,7 @@
                 "label": "Call Products Id endpoint",
                 "activationEligibility": "return True",
                 "activationEligibilityDescription": "Always true",
-                "activationTask": "return requests.get(context['baseUrl'] + \"/products/\" + str(currTestData))"
+                "activationTask": "productsIdResp = requests.get(context['baseUrl'] + \"/products/\" + str(currTestData)); return productsIdResp.json()"
             },
             "position": {
                 "x": 100,
@@ -34,7 +34,7 @@
             "type": "input",
             "data": {
                 "label": "Product1 Called",
-                "activationEligibility": "return priorActionResults['Call Products Id endpoint'].json()['id'] == 1",
+                "activationEligibility": "return priorActionResults['Call Products Id endpoint']['id'] == 1",
                 "activationEligibilityDescription": "Product 1 Called",
                 "activationTask": "print(\"Case 1 complete\"); return \"Case complete!\""
             },
@@ -48,7 +48,7 @@
             "type": "input",
             "data": {
                 "label": "Product2 Called",
-                "activationEligibility": "return priorActionResults['Call Products Id endpoint'].json()['id'] == 2",
+                "activationEligibility": "return priorActionResults['Call Products Id endpoint']['id'] == 2",
                 "activationEligibilityDescription": "Product 2 called",
                 "activationTask": "print(\"Case 2 complete\"); return \"Case complete!\""
             },

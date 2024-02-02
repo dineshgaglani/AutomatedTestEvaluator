@@ -18,21 +18,40 @@ class GlobalVisitedDDBRecorder:
         self.connectionId = connectionId
 
     def add(self, nodeToRecord):
-        print(f'nodeDescription: {str(nodeToRecord.description)}, nodeTestData: {str(nodeToRecord.currTestData)}')
+        print(f'nodeDescription: {str(nodeToRecord.description)}, nodeTestData: {str(nodeToRecord.currTestData)}, nodeActionResults: {str(nodeToRecord.priorActionResults)}')
 
         valToRecord = nodeToRecord.id
         print('Recording ' + str(valToRecord) + ' to global visited ')
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table('visited_nodes')
 
+        # The below should look like this { testData --> "1": { nodeId --> "1": nodeOutput --> { "products": ["LorenIpsum"] } }, {nodeId --> "2": nodeOutput --> {"product1": "lorenIpsum"} } }
+        testDataToNodeOutput = { str(nodeToRecord.currTestData) : { 
+                valToRecord: json.dumps(nodeToRecord.priorActionResults[nodeToRecord.description])
+            } 
+        }
+
+        # Get the existing item from DynamoDB
+        response = table.get_item(Key={'run_id': 'run1'})
+        existing_item = response.get('Item', {})
+        existing_test_data = existing_item.get('test_data_to_node_output', {})
+
+        # Merge new data with existing data based on the common key
+        merged_test_data_output = {key: {**existing_test_data.get(key, {}), **testDataToNodeOutput.get(key, {}) } for key in set(existing_test_data) | set(testDataToNodeOutput)}
+
+        print(f'testDataToNodeOutput: {str(testDataToNodeOutput)}')
+
         ddbWriteResponse = table.update_item(
             Key={
                 'run_id': 'run1'
             },
-            UpdateExpression='SET nodes_visited = list_append(nodes_visited, :value)',
+            UpdateExpression='SET nodes_visited = list_append(if_not_exists(nodes_visited, :empty_list), :value), test_data_to_node_output = :new_data',
             ExpressionAttributeValues={
-                ':value': [valToRecord]
-            })
+                ':empty_list': [],
+                ':value': [valToRecord],
+                ':new_data': merged_test_data_output
+            }
+        )
 
         print(ddbWriteResponse)
 

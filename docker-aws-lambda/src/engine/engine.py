@@ -79,18 +79,14 @@ class Node:
             self.testData.append(currTestData)
     
     def activate(self, context, globalVisited):
-        globalVisited.add(self)
         actionResult=self.activationTask(self.priorActionResults, self.currTestData, context)
-        currActionResults = self.priorActionResults
-        currActionResults[self.description]=actionResult
-        print("action complete, actionResults: ", currActionResults)
+        self.priorActionResults[self.description]=actionResult
+        globalVisited.add(self)
+        # print("action complete, actionResults: ", self.priorActionResults)
         visited=set()
         
         for child in self.children:
-            childActionResults = dict()
-            for key, value in currActionResults.items():
-                childActionResults[key] = value
-            child.setPriorActionResults(childActionResults)
+            child.setPriorActionResults(self.priorActionResults)
             if((child.isActivationEligible(self.currTestData, context)) & (child not in visited)):
                 visited.add(child)
                 child.activate(context, globalVisited)
