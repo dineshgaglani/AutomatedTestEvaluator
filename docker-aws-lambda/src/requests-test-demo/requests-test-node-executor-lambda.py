@@ -25,9 +25,14 @@ class GlobalVisitedDDBRecorder:
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table('visited_nodes')
 
+        currNodeActionResult = nodeToRecord.priorActionResults[nodeToRecord.description]
+        if not isinstance(currNodeActionResult, str):
+            # result is a json
+            currNodeActionResult = json.dumps(currNodeActionResult)
+        
         # The below should look like this { testData --> "1": { nodeId --> "1": nodeOutput --> { "products": ["LorenIpsum"] } }, {nodeId --> "2": nodeOutput --> {"product1": "lorenIpsum"} } }
         testDataToNodeOutput = { str(nodeToRecord.currTestData) : { 
-                valToRecord: json.dumps(nodeToRecord.priorActionResults[nodeToRecord.description])
+                valToRecord: currNodeActionResult
             } 
         }
 
