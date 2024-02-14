@@ -27,6 +27,7 @@ class Node:
         self.description = description
         self.children = []
         self.testData = []
+        self.edges = []
     
     def __repr__(self):
         return f"{self.description}"
@@ -77,6 +78,10 @@ class Node:
         self.currTestData = currTestData
         if not currTestData in (self.testData):
             self.testData.append(currTestData)
+
+    def addEdge(self, edgeString):
+        if edgeString not in self.edges:
+            self.edges.append(edgeString)
     
     def activate(self, context, globalVisited):
         actionResult=self.activationTask(self.priorActionResults, self.currTestData, context)
@@ -88,6 +93,7 @@ class Node:
         for child in self.children:
             child.setPriorActionResults(self.priorActionResults)
             if((child.isActivationEligible(self.currTestData, context)) & (child not in visited)):
+                child.addEdge(f'{self.id} -> {child.id}')
                 visited.add(child)
                 child.activate(context, globalVisited)
                 

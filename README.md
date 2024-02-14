@@ -40,3 +40,24 @@ Notes on process (not useful to run application but provides information on chal
     1. The AWS API gateway websocket API needs to save every connection to ddb since the downstream lambda function needs to know which connection should receive which response
     2. The AWS API gateway management API is needed to correctly respond to each connected client on the websocket API
     
+Pre-deployment testing of tool steps (macos):
+1. Install Pip
+    `curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py`
+
+    `python3 get-pip.py`
+
+2. Run pip with:
+    `/Library/Developer/CommandLineTools/usr/bin/python3 -m pip --version pip 24.0 from /Users/dineshgaglani/Library/Python/3.9/lib/python/site-packages/pip (python 3.9)`
+
+3. Install pytest
+    `/Library/Developer/CommandLineTools/usr/bin/python3 -m pip install pytest`
+
+4. Validate installation of pytest
+    `/Library/Developer/CommandLineTools/usr/bin/python3 -m pytest --version  pytest 8.0.0`
+
+5. Run engine unit tests by
+    `cd AutomatedTestEvaluator/docker-aws-lambda/src/engine`
+    `/Library/Developer/CommandLineTools/usr/bin/python3 -m pytest`
+
+
+
