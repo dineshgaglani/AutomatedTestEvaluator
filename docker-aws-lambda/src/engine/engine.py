@@ -92,10 +92,11 @@ class Node:
         
         for child in self.children:
             child.setPriorActionResults(self.priorActionResults)
-            if((child.isActivationEligible(self.currTestData, context)) & (child not in visited)):
+            if((child.isActivationEligible(self.currTestData, context)) & (child not in visited) & (child.description not in self.priorActionResults)):
                 child.addEdge(f'{self.id} -> {child.id}')
                 visited.add(child)
                 child.activate(context, globalVisited)
+                del self.priorActionResults[child.description]
                 
     def copyNodeWithoutChildren(self):
         nodeWithoutChildren = Node(self.description)

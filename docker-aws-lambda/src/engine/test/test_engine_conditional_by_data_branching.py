@@ -184,10 +184,97 @@ def test_branchingAndConvergingEngine():
 
     assert max(callRecorder, key=int) == '10'
 
-# 4. Loop test a -> b -> c -> a test
-def test_loopingToFirstNode():
-    pass
+# 4. Loop test a -> b(true) -> c(true) -> b(true). Expect - Second call to b is not executed, since it was executed previously in this tree
+def test_loopingToImmediateParentNode():
+    rootNode = Node("root")
+    rootNode.setId(1)
+    rootNode.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    rootNode.assignActivationTask(utils.returnNodeName)
 
-# 5. Loop to second node test a -> b -> c -> b test
-def test_loopingToSecondNode():
+    firstLevelChild = Node("firstLevelChild")
+    firstLevelChild.setId(2)
+    firstLevelChild.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    firstLevelChild.assignActivationTask(utils.returnNodeName)
+
+    secondLevelChild = Node("secondLevelChild")
+    secondLevelChild.setId(3)
+    secondLevelChild.setActivationEligibility(utils.alwaysTrueActivationFunction, "first data: True, second: False")
+    secondLevelChild.assignActivationTask(utils.returnNodeName)
+
+    globalVisitedTestObj = utils.GlobalVisitedTestStub()
+
+    rootNode.addChild(firstLevelChild)
+    firstLevelChild.addChild(secondLevelChild)
+    secondLevelChild.addChild(firstLevelChild)
+
+    context = { "nodeName": "Testing" }
+    testData = [True]
+    for singleTestData in testData:
+        rootNode.setPriorActionResults({})
+        rootNode.isActivationEligible(singleTestData, context)
+        rootNode.activate(context, globalVisitedTestObj)
+    
+    callRecorder = globalVisitedTestObj.getCallRecorder()
+    assert callRecorder['1'].description == "root"
+    assert callRecorder['2'].description == "firstLevelChild"
+    assert "1 -> 2" in callRecorder['2'].edges
+    assert len(callRecorder['2'].edges) == 1
+    assert callRecorder['3'].description == "secondLevelChild"
+    assert "2 -> 3" in callRecorder['3'].edges
+    assert len(callRecorder['3'].edges) == 1
+
+    assert max(callRecorder, key=int) == '3'
+
+
+# 5. Loop to second node test a -> b -> c -> a test
+def test_loopingToEarlierAncestorNode():
+    rootNode = Node("root")
+    rootNode.setId(1)
+    rootNode.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    rootNode.assignActivationTask(utils.returnNodeName)
+
+    firstLevelChild = Node("firstLevelChild")
+    firstLevelChild.setId(2)
+    firstLevelChild.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    firstLevelChild.assignActivationTask(utils.returnNodeName)
+
+    secondLevelChild = Node("secondLevelChild")
+    secondLevelChild.setId(3)
+    secondLevelChild.setActivationEligibility(utils.alwaysTrueActivationFunction, "first data: True, second: False")
+    secondLevelChild.assignActivationTask(utils.returnNodeName)
+
+    globalVisitedTestObj = utils.GlobalVisitedTestStub()
+
+    rootNode.addChild(firstLevelChild)
+    firstLevelChild.addChild(secondLevelChild)
+    secondLevelChild.addChild(rootNode)
+
+    context = { "nodeName": "Testing" }
+    testData = [True]
+    for singleTestData in testData:
+        rootNode.setPriorActionResults({})
+        rootNode.isActivationEligible(singleTestData, context)
+        rootNode.activate(context, globalVisitedTestObj)
+
+    callRecorder = globalVisitedTestObj.getCallRecorder()
+    assert callRecorder['1'].description == "root"
+    assert callRecorder['2'].description == "firstLevelChild"
+    assert "1 -> 2" in callRecorder['2'].edges
+    assert len(callRecorder['2'].edges) == 1
+    assert callRecorder['3'].description == "secondLevelChild"
+    assert "2 -> 3" in callRecorder['3'].edges
+    assert len(callRecorder['3'].edges) == 1
+
+    assert max(callRecorder, key=int) == '3'
+
+
+# 6. Loop to Ancestor Sibling - a -> b(true) -> c(true) -> e (true)
+#                                                 |------------------|      
+#                                                                    |(true)
+#                                            -> d(true) -> f (true) -|    (f goes back to c so path is a, b, d, f, c, e)   
+# Loop to Ancestor Sibling - a -> b(true) -> c(true) -> e (true)
+#                                                 |------------------|      
+#                                                                    |(false)
+#                                            -> d(true) -> f (true) -|    (f goes back to c but false so path is a, b, d, f)    
+def test_loopToAncestorSiblingNode():
     pass
