@@ -226,7 +226,7 @@ def test_loopingToImmediateParentNode():
     assert max(callRecorder, key=int) == '3'
 
 
-# 5. Loop to second node test a -> b -> c -> a test
+# 5. Loop to second node test a -> b -> c -> a test. Expect - Second call to a (root) is not executed, since it was executed previously in this tree
 def test_loopingToEarlierAncestorNode():
     rootNode = Node("root")
     rootNode.setId(1)
