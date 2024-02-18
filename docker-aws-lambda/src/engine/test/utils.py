@@ -7,6 +7,16 @@ def alwaysFalseActivationFunction(priorActionResults, currTestData, context):
 def returnTestDataActivationFunction(priorActionResults, currTestData, context):
     return currTestData
 
+def returnSequenceOfBooleansInOrder(booleanSequence):
+    call_count = [-1]
+    
+    def returnCallNumberFromBooleanSequence(priorActionResults, currTestData, context):
+        call_count[0] += 1
+        return booleanSequence[call_count[0]]
+
+    return returnCallNumberFromBooleanSequence
+
+
 def returnNodeName(priorActionResults, currTestData, context):
     return context['nodeName']
 
@@ -22,7 +32,7 @@ class GlobalVisitedTestStub:
         print(f'nodeDescription: {str(nodeToRecord.description)}, nodeTestData: {str(nodeToRecord.currTestData)}, nodeActionResults: {str(nodeToRecord.priorActionResults)}')
 
     def getRecentCallNumber(self):
-        return max(self.callRecorder)
+        return max(self.callRecorder, key=int)
 
     def getCallRecorder(self):
         return self.callRecorder

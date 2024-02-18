@@ -277,4 +277,96 @@ def test_loopingToEarlierAncestorNode():
 #                                                                    |(false)
 #                                            -> d(true) -> f (true) -|    (f goes back to c but false so path is a, b, d, f)    
 def test_loopToAncestorSiblingNode():
-    pass
+    rootNode = Node("root") # a node
+    rootNode.setId(1)
+    rootNode.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    rootNode.assignActivationTask(utils.returnNodeName)
+
+    firstLevelChild = Node("firstLevelChild") # b node
+    firstLevelChild.setId(2)
+    firstLevelChild.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    firstLevelChild.assignActivationTask(utils.returnNodeName)
+
+    booleanProvider = utils.returnSequenceOfBooleansInOrder([True, True, True, False]) # c node
+    secondLevelFirstAndLoopBackChild = Node("secondLevelFirstAndLoopBackChild")
+    secondLevelFirstAndLoopBackChild.setId(3)
+    secondLevelFirstAndLoopBackChild.setActivationEligibility(booleanProvider, "firstData firstCall: true, firstData secondCall: true, secondData firstCall: true, secondData secondCall: false")
+    secondLevelFirstAndLoopBackChild.assignActivationTask(utils.returnNodeName)
+
+    secondLevelSecondChild = Node("secondLevelSecondChild") # d node
+    secondLevelSecondChild.setId(4)
+    secondLevelSecondChild.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    secondLevelSecondChild.assignActivationTask(utils.returnNodeName)
+
+    thirdLevelFirstChild = Node("thirdLevelFirstChild") # e node
+    thirdLevelFirstChild.setId(5)
+    thirdLevelFirstChild.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    thirdLevelFirstChild.assignActivationTask(utils.returnNodeName)
+
+    thirdLevelSecondChildAndLoopbackParent = Node("thirdLevelSecondChildAndLoopbackParent") # f node
+    thirdLevelSecondChildAndLoopbackParent.setId(6)
+    thirdLevelSecondChildAndLoopbackParent.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    thirdLevelSecondChildAndLoopbackParent.assignActivationTask(utils.returnNodeName)
+
+    globalVisitedTestObj = utils.GlobalVisitedTestStub()
+
+    rootNode.addChild(firstLevelChild)
+    firstLevelChild.addChild(secondLevelFirstAndLoopBackChild)
+    firstLevelChild.addChild(secondLevelSecondChild)
+    secondLevelFirstAndLoopBackChild.addChild(thirdLevelFirstChild)
+    secondLevelSecondChild.addChild(thirdLevelSecondChildAndLoopbackParent)
+    thirdLevelSecondChildAndLoopbackParent.addChild(secondLevelFirstAndLoopBackChild)
+
+    context = { "nodeName": "Testing" }
+    testData = [True, False]
+
+    for singleTestData in testData:
+        rootNode.setPriorActionResults({})
+        rootNode.isActivationEligible(singleTestData, context)
+        rootNode.activate(context, globalVisitedTestObj)
+    
+    # For first test data
+    callRecorder = globalVisitedTestObj.getCallRecorder()
+    assert callRecorder['1'].description == "root"
+    assert callRecorder['2'].description == "firstLevelChild"
+    assert "1 -> 2" in callRecorder['2'].edges
+    assert len(callRecorder['2'].edges) == 1
+    assert callRecorder['3'].description == "secondLevelFirstAndLoopBackChild"
+    assert "2 -> 3" in callRecorder['3'].edges 
+    assert len(callRecorder['3'].edges) == 2
+    assert callRecorder['4'].description == "thirdLevelFirstChild"
+    assert "3 -> 5" in callRecorder['4'].edges
+    assert len(callRecorder['4'].edges) == 1
+    assert callRecorder['5'].description == "secondLevelSecondChild"
+    assert "2 -> 4" in callRecorder['5'].edges
+    assert len(callRecorder['5'].edges) == 1
+    assert callRecorder['6'].description == "thirdLevelSecondChildAndLoopbackParent"
+    assert "4 -> 6" in callRecorder['6'].edges
+    assert len(callRecorder['6'].edges) == 1
+    assert callRecorder['7'].description == "secondLevelFirstAndLoopBackChild"
+    assert "6 -> 3" in callRecorder['7'].edges
+    assert len(callRecorder['7'].edges) == 2 # Since this node was called twice first from first level child and then from third level loopback
+    assert callRecorder['8'].description == "thirdLevelFirstChild"
+    assert "3 -> 5" in callRecorder['8'].edges
+    # This node was called twice, but from the same parent, and we only record one interaction between the same nodes regardless of how many times they interact
+    assert len(callRecorder['8'].edges) == 1 
+    
+    # For second test data
+    assert callRecorder['9'].description == "root"
+    assert callRecorder['10'].description == "firstLevelChild"
+    assert "1 -> 2" in callRecorder['10'].edges
+    assert len(callRecorder['10'].edges) == 1
+    assert callRecorder['11'].description == "secondLevelFirstAndLoopBackChild"
+    assert "2 -> 3" in callRecorder['11'].edges 
+    assert len(callRecorder['11'].edges) == 2 # Two because it is accessed twice in previous test data
+    assert callRecorder['12'].description == "thirdLevelFirstChild"
+    assert "3 -> 5" in callRecorder['12'].edges
+    assert len(callRecorder['12'].edges) == 1
+    assert callRecorder['13'].description == "secondLevelSecondChild"
+    assert "2 -> 4" in callRecorder['13'].edges
+    assert len(callRecorder['13'].edges) == 1
+    assert callRecorder['14'].description == "thirdLevelSecondChildAndLoopbackParent"
+    assert "4 -> 6" in callRecorder['14'].edges
+    assert len(callRecorder['14'].edges) == 1
+
+    assert max(callRecorder, key=int) == '14'
