@@ -3,28 +3,21 @@ import { Handle, Position } from 'reactflow';
 
 const handleStyle = { left: 10 };
 
-function TextUpdaterNode({ data, xPos, yPos }) {
+function TextUpdaterNode({ data }) {
 
-  // console.log(`Text Updated Node change: ${JSON.stringify(data)}, x: ${xPos}`)
-  const [nodeDescription, setNodeDescription] = useState("")
-  const [activationEligibility, setActivationEligibility] = useState("")
-  const [activationTask, setActivationTask] = useState("")
   const [showTextareas, setShowTextareas] = useState(false);
 
   const onChangeNodeDescription = useCallback((evt) => {
-    setNodeDescription(evt.target.value)
     data["label"] = evt.target.value
     data["activationEligibilityDescription"] = evt.target.value
     console.log(`Node: ${JSON.stringify(data)}`)
   }, []);
 
   const onChangeActivationEligibility = useCallback((evt) => {
-    setActivationEligibility(evt.target.value)
     data["activationEligibility"] = evt.target.value
   }, []);
 
   const onChangeActivationTask = useCallback((evt) => {
-    setActivationTask(evt.target.value)
     data["activationTask"] = evt.target.value
   }, []);
 
@@ -34,7 +27,7 @@ function TextUpdaterNode({ data, xPos, yPos }) {
 
       <div>
         <label htmlFor="nodeDescription">Node Description:</label>
-        <input type="text" id="nodeDescription" name="nodeDescription" value={nodeDescription} onChange={onChangeNodeDescription} className="nodrag" />
+        <input type="text" id="nodeDescription" name="nodeDescription" value={data['label']} onChange={onChangeNodeDescription} className="nodrag" />
 
         <br />
 
@@ -45,7 +38,7 @@ function TextUpdaterNode({ data, xPos, yPos }) {
             <textarea
               id="activationEligibility"
               name="activationEligibility"
-              value={activationEligibility}
+              value={data['activationEligibility']}
               onChange={onChangeActivationEligibility}
               className="nodrag"
             ></textarea>
@@ -58,7 +51,7 @@ function TextUpdaterNode({ data, xPos, yPos }) {
         {showTextareas ? (
           <div id="activationTaskSection">
             <label htmlFor="activationTask">Activation Task:</label>
-            <textarea id="activationTask" name="activationTask" value={activationTask} onChange={onChangeActivationTask} className="nodrag"></textarea>
+            <textarea id="activationTask" name="activationTask" value={data['activationTask']} onChange={onChangeActivationTask} className="nodrag"></textarea>
           </div>
         ) : null}
 

@@ -1,21 +1,875 @@
 import React, { useEffect } from 'react';
 import ReactFlow, { addEdge, applyEdgeChanges, applyNodeChanges } from 'reactflow';
 import { useCallback, useState, useMemo } from 'react';
+import { ChatAPIcall } from '../api/chatGPT_API'
 
 import axios from 'axios';
 
 import 'reactflow/dist/style.css';
 
 import TextUpdaterNode from '../nodes/TextNode.js';
-import initialNodes from '../nodes/allNodes'
-import initialEdges from '../edges/allEdges'
+import SavedDiagramsModal from '../components/savedDiagramsModal.js';
 
 function Diagram({ socketOpen, testData, envData }) {
 
+  const allDiagrams = {
+    "FakerApiProducts": {
+      "nodes": [
+        {
+          "id": "1",
+          "type": "textUpdater",
+          "data": {
+            "label": "Call Products endpoint",
+            "activationEligibilityDescription": "Call Products endpoint",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 350.7954178483643,
+            "y": 48.41060557131152
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 350.7954178483643,
+            "y": 48.41060557131152
+          },
+          "dragging": false
+        },
+        {
+          "id": "2",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 2,
+            "label": "Call Products Id endpoint",
+            "activationEligibilityDescription": "Call Products Id endpoint",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 351.41132620533153,
+            "y": 168.02651392827883
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 351.41132620533153,
+            "y": 168.02651392827883
+          },
+          "dragging": false
+        },
+        {
+          "id": "3",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 3,
+            "label": "Product 1 Called",
+            "activationEligibilityDescription": "Product 1 Called",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 63,
+            "y": 294
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 63,
+            "y": 294
+          },
+          "dragging": false
+        },
+        {
+          "id": "4",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 4,
+            "label": "Product 2 Called",
+            "activationEligibilityDescription": "Product 2 Called",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 356.33106378647517,
+            "y": 293.5893944286885
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 356.33106378647517,
+            "y": 293.5893944286885
+          },
+          "dragging": false
+        },
+        {
+          "id": "5",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 5,
+            "label": "Product 3 called",
+            "activationEligibilityDescription": "Product 3 called",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 640.478602643852,
+            "y": 292.3840916430327
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 640.478602643852,
+            "y": 292.3840916430327
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "1",
+          "sourceHandle": "a",
+          "target": "2",
+          "targetHandle": null,
+          "id": "reactflow__edge-1a-2"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "3",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-3"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "4",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-4"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "5",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-5"
+        }
+      ]
+    },
+    "Login": {
+      "nodes": [
+        {
+          "id": "1",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 1,
+            "label": "Enter Username",
+            "activationEligibilityDescription": "Enter Username",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 326.5493494679022,
+            "y": 71.44797862474114
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 326.5493494679022,
+            "y": 71.44797862474114
+          },
+          "dragging": false
+        },
+        {
+          "id": "2",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 2,
+            "label": "Enter Password",
+            "activationEligibilityDescription": "Enter Password",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 323.1013708431609,
+            "y": 183.1040427505177
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 323.1013708431609,
+            "y": 183.1040427505177
+          },
+          "dragging": false
+        },
+        {
+          "id": "3",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 3,
+            "label": "Validate admin Login",
+            "activationEligibilityDescription": "Validate admin Login",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": -9.511593870081754,
+            "y": 280.2803206288828
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": -9.511593870081754,
+            "y": 280.2803206288828
+          },
+          "dragging": false
+        },
+        {
+          "id": "4",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 4,
+            "label": "Validate NonAdminLogin",
+            "activationEligibilityDescription": "Validate NonAdminLogin",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 635.9310409399458,
+            "y": 288.9681923773297
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 635.9310409399458,
+            "y": 288.9681923773297
+          },
+          "dragging": false
+        },
+        {
+          "id": "5",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 5,
+            "label": "Validate Wrong Credentials",
+            "activationEligibilityDescription": "Validate Wrong Credentials",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 443.89000927433233,
+            "y": 419.28626860403284
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 443.89000927433233,
+            "y": 419.28626860403284
+          },
+          "dragging": false
+        },
+        {
+          "id": "6",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 6,
+            "label": "Validate Blank Credentials",
+            "activationEligibilityDescription": "Validate Blank Credentials",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 100,
+            "y": 400
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66
+        },
+        {
+          "id": "7",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 7,
+            "label": "Validate Blank Username",
+            "activationEligibilityDescription": "Validate Blank Username",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": -65.06956322049058,
+            "y": 580.3180762267032
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": -65.06956322049058,
+            "y": 580.3180762267032
+          },
+          "dragging": false
+        },
+        {
+          "id": "8",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 8,
+            "label": "Vaiidate Blank Password",
+            "activationEligibilityDescription": "Vaiidate Blank Password",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 223.0781831029974,
+            "y": 576.7428671112807
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 223.0781831029974,
+            "y": 576.7428671112807
+          },
+          "dragging": false
+        },
+        {
+          "id": "9",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 9,
+            "label": "Validate Wrong username",
+            "activationEligibilityDescription": "Validate Wrong username",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 362.0841310781475,
+            "y": 707.829670096785
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 362.0841310781475,
+            "y": 707.829670096785
+          },
+          "dragging": false
+        },
+        {
+          "id": "10",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 10,
+            "label": "Validate wrong password",
+            "activationEligibilityDescription": "Validate wrong password",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 660.3677277748234,
+            "y": 701.3585037318802
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 660.3677277748234,
+            "y": 701.3585037318802
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "1",
+          "sourceHandle": "a",
+          "target": "2",
+          "targetHandle": null,
+          "id": "reactflow__edge-1a-2"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "3",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-3"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "4",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-4"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "5",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-5"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "6",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-6"
+        },
+        {
+          "source": "6",
+          "sourceHandle": "a",
+          "target": "7",
+          "targetHandle": null,
+          "id": "reactflow__edge-6a-7"
+        },
+        {
+          "source": "6",
+          "sourceHandle": "a",
+          "target": "8",
+          "targetHandle": null,
+          "id": "reactflow__edge-6a-8"
+        },
+        {
+          "source": "5",
+          "sourceHandle": "a",
+          "target": "9",
+          "targetHandle": null,
+          "id": "reactflow__edge-5a-9"
+        },
+        {
+          "source": "5",
+          "sourceHandle": "a",
+          "target": "10",
+          "targetHandle": null,
+          "id": "reactflow__edge-5a-10"
+        }
+      ]
+    },
+    "MealOrder_ChatGPTGenerated": {
+      "nodes": [
+        {
+          "id": "1",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 1,
+            "label": "Select Meal",
+            "activationEligibilityDescription": "Select Meal",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 100,
+            "y": 50
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66
+        },
+        {
+          "id": "2",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 2,
+            "label": "Customize Meal",
+            "activationEligibilityDescription": "Customize Meal",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 300,
+            "y": 150
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66
+        },
+        {
+          "id": "3",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 3,
+            "label": "Add to Cart",
+            "activationEligibilityDescription": "Add to Cart",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 500,
+            "y": 250
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66
+        },
+        {
+          "id": "4",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 4,
+            "label": "Proceed to Checkout",
+            "activationEligibilityDescription": "Proceed to Checkout",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 700,
+            "y": 350
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66
+        },
+        {
+          "id": "5",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 5,
+            "label": "Place Order",
+            "activationEligibilityDescription": "Place Order",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 900,
+            "y": 450
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66
+        }
+      ],
+      "edges": [
+        {
+          "source": "1",
+          "sourceHandle": "a",
+          "target": "2",
+          "targetHandle": null,
+          "id": "reactflow__edge-1a-2"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "3",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-3"
+        },
+        {
+          "source": "3",
+          "sourceHandle": "a",
+          "target": "4",
+          "targetHandle": null,
+          "id": "reactflow__edge-3a-4"
+        },
+        {
+          "source": "4",
+          "sourceHandle": "a",
+          "target": "5",
+          "targetHandle": null,
+          "id": "reactflow__edge-4a-5"
+        }
+      ]
+    },
+    "Checkout_ChatGPTGenerated": {
+      "nodes": [
+        {
+          "id": "1",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 1,
+            "label": "Add Item to Cart",
+            "activationEligibilityDescription": "Add Item to Cart",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 323.5493494679022,
+            "y": 67.44797862474114
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 323.5493494679022,
+            "y": 67.44797862474114
+          },
+          "dragging": false
+        },
+        {
+          "id": "2",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 2,
+            "label": "Proceed to Checkout",
+            "activationEligibilityDescription": "Proceed to Checkout",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 323.1013708431609,
+            "y": 183.1040427505177
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66
+        },
+        {
+          "id": "3",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 3,
+            "label": "Enter Shipping Details",
+            "activationEligibilityDescription": "Enter Shipping Details",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": -0.5115938700817537,
+            "y": 277.2803206288828
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": -0.5115938700817537,
+            "y": 277.2803206288828
+          },
+          "dragging": false
+        },
+        {
+          "id": "4",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 4,
+            "label": "Select Payment Method",
+            "activationEligibilityDescription": "Select Payment Method",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 326.9310409399458,
+            "y": 409.9681923773297
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 326.9310409399458,
+            "y": 409.9681923773297
+          },
+          "dragging": false
+        },
+        {
+          "id": "5",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 5,
+            "label": "Place Order",
+            "activationEligibilityDescription": "Place Order",
+            "activationEligibility": "",
+            "activationTask": ""
+          },
+          "position": {
+            "x": 326.89000927433233,
+            "y": 554.2862686040328
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 326.89000927433233,
+            "y": 554.2862686040328
+          },
+          "dragging": false
+        },
+        {
+          "id": "6",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 6,
+            "label": "Enter Discount Coupon",
+            "activationEligibilityDescription": "Enter Discount Coupon"
+          },
+          "position": {
+            "x": 540.1384177177154,
+            "y": 288.3632966267072
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 278,
+          "height": 66,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 540.1384177177154,
+            "y": 288.3632966267072
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "1",
+          "sourceHandle": "a",
+          "target": "2",
+          "targetHandle": null,
+          "id": "reactflow__edge-1a-2"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "3",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-3"
+        },
+        {
+          "source": "3",
+          "sourceHandle": "a",
+          "target": "4",
+          "targetHandle": null,
+          "id": "reactflow__edge-3a-4"
+        },
+        {
+          "source": "4",
+          "sourceHandle": "a",
+          "target": "5",
+          "targetHandle": null,
+          "id": "reactflow__edge-4a-5"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "4",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-4"
+        },
+        {
+          "source": "2",
+          "sourceHandle": "a",
+          "target": "6",
+          "targetHandle": null,
+          "id": "reactflow__edge-2a-6"
+        },
+        {
+          "source": "6",
+          "sourceHandle": "a",
+          "target": "4",
+          "targetHandle": null,
+          "id": "reactflow__edge-6a-4"
+        }
+      ]
+    }               
+  }
+
   const initPosition = { 'x': 100, 'y': 150 }
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
   const [nodePosition, setPosition] = useState(initPosition)
+
+  const [diagramsModalOpen, setDiagramsModalOpen] = useState(false)
 
   useEffect(() => {
     if (socketOpen) {
@@ -103,14 +957,16 @@ function Diagram({ socketOpen, testData, envData }) {
   function addNodeClicked(evt) {
     setPosition((prevPosition) => {
       // console.log(`set position called! Prev Position is: ${JSON.stringify(prevPosition)}`)
-      return { x: prevPosition["x"], y: prevPosition["y"] + 50 }
+      if(prevPosition.x && prevPosition.y) {
+        return { x: prevPosition["x"], y: prevPosition["y"] + 50 }
+      }
     })
 
     setNodes((prevNodes) => {
       return [...prevNodes, {
         id: `${prevNodes.length + 1}`,
         type: 'textUpdater',
-        data: { nodeId: prevNodes.length + 1, label: 'New Node' },
+        data: { nodeId: prevNodes.length + 1 },
         position: nodePosition,
         style: { backgroundColor: '#ff0072', color: 'white' },
       }]
@@ -120,9 +976,24 @@ function Diagram({ socketOpen, testData, envData }) {
     // setNodes(initialNodes)
   }
 
+  function openDiagram(diagramIndex) {
+    console.log(`Diagram: ${diagramIndex} clicked!`)
+    const diagramKey = Object.keys(allDiagrams)[diagramIndex]
+    setNodes(allDiagrams[diagramKey]['nodes'])
+    setEdges(allDiagrams[diagramKey]['edges'])
+    setDiagramsModalOpen(false)
+  }
+
+  function generateWithChatGpt(prompt) {
+    console.log(`prompt: ${prompt}`)
+  }
+
   return (
     <>
       <button style={{ display: 'bottom', height: '300px' }} onClick={addNodeClicked}>Add Node</button>
+      <button style={{ display: 'top', height: '300px' }} onClick={() => setDiagramsModalOpen(true)}>Open Demo Diagram</button>
+      {diagramsModalOpen && <SavedDiagramsModal generateWithApi={generateWithChatGpt} renderDiagram={openDiagram} diagramsList={Object.keys(allDiagrams)} modalOpen={setDiagramsModalOpen}/>}
+      <button style={{ display: 'top', height: '300px' }} onClick={ChatAPIcall}>Display Chat</button>
       {socketOpen ? (<h4>Evaluate Diagram</h4>) : (<h4></h4>)}
       <div style={{ width: '100vw', height: '100vh' }}>
         <ReactFlow nodes={nodes}
