@@ -16,7 +16,7 @@ function EnvPane({setEnvData}) {
     }
 
     return (
-        <div>
+        <div style={{border: '1px solid black', marginTop: '10px'}}>
             <h2>Env Vars</h2>
             <button onClick={() => addKeyVal()} >Add EnvKeyValue</button>
             <table>

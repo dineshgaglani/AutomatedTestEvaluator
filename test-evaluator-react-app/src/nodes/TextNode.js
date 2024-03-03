@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, useOnSelectionChange } from 'reactflow';
 
 const handleStyle = { left: 10 };
 
@@ -7,18 +7,33 @@ function TextUpdaterNode({ data }) {
 
   const [showTextareas, setShowTextareas] = useState(false);
 
+  const initialLabelData = data.label ? data.label : ""
+  const [label, setLabel] = useState(initialLabelData)
+
+  const initialActivationEligibility = data.activationEligibility ? data.activationEligibility : ""
+  const [activationEligibility, setActivationEligibility] = useState(initialActivationEligibility)
+
+  const initialActivationTask = data.activationTask ? data.activationTask : ""
+  const [activationTask, setActivationTask] = useState(initialActivationTask)
+
   const onChangeNodeDescription = useCallback((evt) => {
-    data["label"] = evt.target.value
-    data["activationEligibilityDescription"] = evt.target.value
-    console.log(`Node: ${JSON.stringify(data)}`)
+    const value = evt.target.value
+    setLabel(value)
+    data["label"] = value
+    data["activationEligibilityDescription"] = label
   }, []);
 
   const onChangeActivationEligibility = useCallback((evt) => {
-    data["activationEligibility"] = evt.target.value
+    const value = evt.target.value
+    setActivationEligibility(value)
+    data["activationEligibility"] = value
+    console.log(`Activation Eligibility change: ${data["activationEligibility"]}`)
   }, []);
 
   const onChangeActivationTask = useCallback((evt) => {
-    data["activationTask"] = evt.target.value
+    const value = evt.target.value
+    setActivationTask(value)
+    data["activationTask"] = value
   }, []);
 
   return (
@@ -27,7 +42,7 @@ function TextUpdaterNode({ data }) {
 
       <div>
         <label htmlFor="nodeDescription">Node Description:</label>
-        <input type="text" id="nodeDescription" name="nodeDescription" value={data['label']} onChange={onChangeNodeDescription} className="nodrag" />
+        <input type="text" id="nodeDescription" name="nodeDescription" value={label} onChange={onChangeNodeDescription} className="nodrag" />
 
         <br />
 
@@ -38,7 +53,7 @@ function TextUpdaterNode({ data }) {
             <textarea
               id="activationEligibility"
               name="activationEligibility"
-              value={data['activationEligibility']}
+              value={activationEligibility}
               onChange={onChangeActivationEligibility}
               className="nodrag"
             ></textarea>
@@ -51,7 +66,7 @@ function TextUpdaterNode({ data }) {
         {showTextareas ? (
           <div id="activationTaskSection">
             <label htmlFor="activationTask">Activation Task:</label>
-            <textarea id="activationTask" name="activationTask" value={data['activationTask']} onChange={onChangeActivationTask} className="nodrag"></textarea>
+            <textarea id="activationTask" name="activationTask" value={activationTask} onChange={onChangeActivationTask} className="nodrag"></textarea>
           </div>
         ) : null}
 

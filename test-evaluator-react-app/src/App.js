@@ -19,7 +19,7 @@ function App() {
   const handleEvaluateDiagram = () => {
     console.log('Evaluate diagram initiated on App.js');
     setEvaluateDiagramSocketOpen(true)
-  } 
+  }
 
   const handleEvaluateTestData = () => {
     console.log('Evaluate TestData initiated on App.js');
@@ -27,13 +27,14 @@ function App() {
   }
 
   return (
-    <div style={{display: "flex" }}>
-      <button style={{display: "top", height: '300px'}} onClick={handleEvaluateClick}>Evaluate Diagram with TestData</button>
+    <div style={{ display: "flex" }}>
       <Diagram id="diagramPane" socketOpen={evaluateDiagramSocketOpen} testData={testData} envData={envData}></Diagram>
-      <EnvPane style={{width: '300px', height: '300px'}} setEnvData={setEnvData}></EnvPane>
-      <TestDataPane id="testDataPane" socketOpen={evaluateTestDataSocketOpen} style={{width: '300px'}} setTestData={setTestData}></TestDataPane>
+      <div style={{ float: "right" }}>
+        <EnvPane style={{ width: '300px', height: '300px' }} setEnvData={setEnvData}></EnvPane>
+        <TestDataPane id="testDataPane" socketOpen={evaluateTestDataSocketOpen} style={{ width: '300px' }} setTestData={setTestData}></TestDataPane>
+        <button style={{ display: "top", height: '70px', marginTop: '10px' }} onClick={handleEvaluateClick}>Evaluate Diagram with TestData</button>
+      </div>
     </div>
-    
   );
 }
 

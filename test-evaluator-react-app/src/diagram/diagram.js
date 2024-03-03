@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
-import ReactFlow, { addEdge, applyEdgeChanges, applyNodeChanges } from 'reactflow';
+import ReactFlow, { addEdge, applyEdgeChanges, applyNodeChanges, createSelectionChange } from 'reactflow';
 import { useCallback, useState, useMemo } from 'react';
 import { ChatAPIcall } from '../api/chatGPT_API'
 
 import axios from 'axios';
 
 import 'reactflow/dist/style.css';
+import '../App.css'
 
 import TextUpdaterNode from '../nodes/TextNode.js';
 import SavedDiagramsModal from '../components/savedDiagramsModal.js';
+import OutputDetail from '../components/outputDetail.js'
 
 function Diagram({ socketOpen, testData, envData }) {
 
@@ -861,7 +863,7 @@ function Diagram({ socketOpen, testData, envData }) {
           "id": "reactflow__edge-6a-4"
         }
       ]
-    }               
+    }
   }
 
   const initPosition = { 'x': 100, 'y': 150 }
@@ -869,7 +871,13 @@ function Diagram({ socketOpen, testData, envData }) {
   const [edges, setEdges] = useState([]);
   const [nodePosition, setPosition] = useState(initPosition)
 
+  const [diagPaneHeight, setDiagPaneHeight] = useState(90)
+
   const [diagramsModalOpen, setDiagramsModalOpen] = useState(false)
+  const [inputTextAreaContent, setInputTextAreaContent] = useState("")
+  const [outputTextAreaContent, setOutputTextAreaContent] = useState("")
+
+  const [evaluationResponse, setEvaluationResponse] = useState({})
 
   useEffect(() => {
     if (socketOpen) {
@@ -885,11 +893,12 @@ function Diagram({ socketOpen, testData, envData }) {
       //   .catch(function (error) {
       //     console.log(error);
       //   });
-      
+
       // Ws Example
       const ws = new WebSocket('wss://0ig7g8kowd.execute-api.us-east-1.amazonaws.com/test/');
 
       const request = { action: 'evaluateDiagram', nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]`, envData: `${JSON.stringify(envData)}` }
+      console.log(`request: ${JSON.stringify(request)}`)
       ws.onopen = () => {
         console.log('WebSocket connection established in Diagram.')
 
@@ -902,6 +911,7 @@ function Diagram({ socketOpen, testData, envData }) {
         console.log(`All event data ${JSON.stringify(eventDataResponse)}`)
         console.log(`event data 0: ${JSON.stringify(eventDataResponse.data[0])} in Diagram`)
         const eventData = eventDataResponse.data[0]
+        setEvaluationResponse(eventData)
         setNodes((prevNodes) => {
           const newNodes = prevNodes.map(node => {
             if (eventData['nodes_visited'].includes(node.id)) {
@@ -919,7 +929,7 @@ function Diagram({ socketOpen, testData, envData }) {
       ws.addEventListener('close', (event) => {
         console.log('WebSocket connection closed:', event);
       });
-  
+
       // Clean up the WebSocket connection on component unmount
       return () => {
         ws.close();
@@ -932,17 +942,23 @@ function Diagram({ socketOpen, testData, envData }) {
 
     }
   }, [socketOpen])
-
-  // const onNodesChange = useCallback(
-  //   (changes) => setNodes((nds) => { 
-  //     // console.log(`Changes: ${JSON.stringify(changes)}, nodes: ${JSON.stringify(nds)}`)
-  //     applyNodeChanges(changes, nds) }),
-  //   [setNodes]
-  // );
+  
   const onNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    (changes) => setNodes((nds) => {
+      const selectedNode = changes.find(item => item.selected)
+      if(selectedNode) {
+        const selectedNodeFullObject = nds.find(node => node.id == selectedNode.id)
+        // console.log(`Selected Node full: ${JSON.stringify(selectedNodeFullObject)}`)
+        if(selectedNodeFullObject) {
+          setInputTextAreaContent(`Id: ${selectedNodeFullObject.id}\nDescription: ${selectedNodeFullObject.data.label}\nactivationEligibilityDescription: ${selectedNodeFullObject.data.activationEligibility}\nactivationTask: ${selectedNodeFullObject.data.activationTask}`)
+          setOutputTextAreaContent(`${JSON.stringify(evaluationResponse)}`)
+        }
+      }
+      return applyNodeChanges(changes, nds)
+    }),
     [setNodes]
   );
+
   const onEdgesChange = useCallback(
     (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
     [setEdges]
@@ -957,7 +973,7 @@ function Diagram({ socketOpen, testData, envData }) {
   function addNodeClicked(evt) {
     setPosition((prevPosition) => {
       // console.log(`set position called! Prev Position is: ${JSON.stringify(prevPosition)}`)
-      if(prevPosition.x && prevPosition.y) {
+      if (prevPosition.x && prevPosition.y) {
         return { x: prevPosition["x"], y: prevPosition["y"] + 50 }
       }
     })
@@ -971,18 +987,15 @@ function Diagram({ socketOpen, testData, envData }) {
         style: { backgroundColor: '#ff0072', color: 'white' },
       }]
     })
-
-    // console.log(`initial Nodes: ${JSON.stringify(initialNodes)}`)
-    // setNodes(initialNodes)
   }
 
-  function openDiagram(diagramIndex) {
+  const openDiagram = useCallback((diagramIndex) => {
     console.log(`Diagram: ${diagramIndex} clicked!`)
     const diagramKey = Object.keys(allDiagrams)[diagramIndex]
     setNodes(allDiagrams[diagramKey]['nodes'])
     setEdges(allDiagrams[diagramKey]['edges'])
     setDiagramsModalOpen(false)
-  }
+  }, [setNodes, setEdges])
 
   function generateWithChatGpt(prompt) {
     console.log(`prompt: ${prompt}`)
@@ -990,18 +1003,24 @@ function Diagram({ socketOpen, testData, envData }) {
 
   return (
     <>
-      <button style={{ display: 'bottom', height: '300px' }} onClick={addNodeClicked}>Add Node</button>
-      <button style={{ display: 'top', height: '300px' }} onClick={() => setDiagramsModalOpen(true)}>Open Demo Diagram</button>
-      {diagramsModalOpen && <SavedDiagramsModal generateWithApi={generateWithChatGpt} renderDiagram={openDiagram} diagramsList={Object.keys(allDiagrams)} modalOpen={setDiagramsModalOpen}/>}
-      <button style={{ display: 'top', height: '300px' }} onClick={ChatAPIcall}>Display Chat</button>
+      <div style={{ float: "left" }}>
+        <button style={{ display: 'left', height: '60px' }} onClick={() => setDiagramsModalOpen(true)}>Open Demo Diagram</button>
+        {diagramsModalOpen && <SavedDiagramsModal generateWithApi={generateWithChatGpt} renderDiagram={openDiagram} diagramsList={Object.keys(allDiagrams)} modalOpen={setDiagramsModalOpen} />}
+        <button style={{ display: 'bottom', height: '70px', marginTop: '10px', marginRight: '5px' }} onClick={addNodeClicked}>Add Node</button>
+      </div>
+      {/* <button style={{ display: 'top', height: '300px' }} onClick={ChatAPIcall}>Display Chat</button> */}
       {socketOpen ? (<h4>Evaluate Diagram</h4>) : (<h4></h4>)}
-      <div style={{ width: '100vw', height: '100vh' }}>
+      <div style={{ width: '90vw', height: `${diagPaneHeight}vh` }}>
         <ReactFlow nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes} />
+        <div id="outputArea" style={{ float: "bottom", border: "black" }}>
+          <OutputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Input" textAreaValue={inputTextAreaContent}></OutputDetail>
+          <OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" textAreaValue={outputTextAreaContent}></OutputDetail>
+        </div>
       </div>
     </>
   );
