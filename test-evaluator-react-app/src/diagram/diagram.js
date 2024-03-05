@@ -12,7 +12,7 @@ import TextUpdaterNode from '../nodes/TextNode.js';
 import SavedDiagramsModal from '../components/savedDiagramsModal.js';
 import OutputDetail from '../components/outputDetail.js'
 
-function Diagram({ socketOpen, testData, envData }) {
+function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
 
   const allDiagrams = {
     "FakerApiProducts": {
@@ -878,6 +878,7 @@ function Diagram({ socketOpen, testData, envData }) {
   const [outputTextAreaContent, setOutputTextAreaContent] = useState("")
 
   const [evaluationResponse, setEvaluationResponse] = useState({})
+  
 
   useEffect(() => {
     if (socketOpen) {
@@ -908,9 +909,8 @@ function Diagram({ socketOpen, testData, envData }) {
       ws.onmessage = (event) => {
         // console.log(`event: ${event} in Diagram`)
         const eventDataResponse = JSON.parse(event.data)
-        console.log(`All event data ${JSON.stringify(eventDataResponse)}`)
-        console.log(`event data 0: ${JSON.stringify(eventDataResponse.data[0])} in Diagram`)
         const eventData = eventDataResponse.data[0]
+        console.log(`Setting evaluation response to: ${JSON.stringify(eventData)}`)
         setEvaluationResponse(eventData)
         setNodes((prevNodes) => {
           const newNodes = prevNodes.map(node => {
@@ -951,12 +951,21 @@ function Diagram({ socketOpen, testData, envData }) {
         // console.log(`Selected Node full: ${JSON.stringify(selectedNodeFullObject)}`)
         if(selectedNodeFullObject) {
           setInputTextAreaContent(`Id: ${selectedNodeFullObject.id}\nDescription: ${selectedNodeFullObject.data.label}\nactivationEligibilityDescription: ${selectedNodeFullObject.data.activationEligibility}\nactivationTask: ${selectedNodeFullObject.data.activationTask}`)
-          setOutputTextAreaContent(`${JSON.stringify(evaluationResponse)}`)
+          console.log(`testData.length > 0: ${testData.length > 0}, selectedTestDataIndex >= 0: ${selectedTestDataIndex >= 0}`)
+          if(testData.length > 0 && selectedTestDataIndex >= 0) {
+            const selectedTestDataValue = testData[selectedTestDataIndex]["value"]
+            console.log(`selectedTestData: ${JSON.stringify(selectedTestDataValue)}`)
+            if(evaluationResponse && evaluationResponse["test_data_to_node_output"] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id]) {
+              setOutputTextAreaContent(evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id])
+            } else {
+              setOutputTextAreaContent("")
+            }
+          }
         }
       }
       return applyNodeChanges(changes, nds)
     }),
-    [setNodes]
+    [setNodes, selectedTestDataIndex]
   );
 
   const onEdgesChange = useCallback(
