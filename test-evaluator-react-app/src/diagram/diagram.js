@@ -11,6 +11,7 @@ import '../App.css'
 import TextUpdaterNode from '../nodes/TextNode.js';
 import SavedDiagramsModal from '../components/savedDiagramsModal.js';
 import OutputDetail from '../components/outputDetail.js'
+import InputDetail from '../components/inputDetail';
 
 function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
 
@@ -1027,7 +1028,8 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
           onConnect={onConnect}
           nodeTypes={nodeTypes} />
         <div id="outputArea" style={{ float: "bottom", border: "black" }}>
-          <OutputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Input" textAreaValue={inputTextAreaContent}></OutputDetail>
+          {/* <OutputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Input" textAreaValue={inputTextAreaContent}></OutputDetail> */}
+          <InputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Input" textAreaValue={inputTextAreaContent}></InputDetail>
           <OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" textAreaValue={outputTextAreaContent}></OutputDetail>
         </div>
       </div>

@@ -32,6 +32,14 @@
   box-shadow: 0 0 0 2px #1a192b;
 }
 
+.Dropdown-root {
+  width: fit-content
+}
+
+.Dropdown-control {
+  font-size: xx-small;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
