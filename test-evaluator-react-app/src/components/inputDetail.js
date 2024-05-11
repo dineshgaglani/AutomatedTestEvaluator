@@ -4,13 +4,10 @@ import Dropdown from 'react-dropdown';
 import 'react-dropdown/style.css';
 
 import HttpApiInputDetail from './httpApiInputDetail';
-import SeleniumUInputDetail from './SeleniumUIInputDetail';
+import PythonInputDetail from './pythonInputDetail';
+import SeleniumUInputDetail from './seleniumUIInputDetail';
 
-function InputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDifferential, textAreaHeight, textAreaValue }) {
-
-    const [selectedStepType, setSelectedStepType] = useState('')
-    const stepTypeItems = { "HttpAPI": <HttpApiInputDetail style={{ float: "right" }} />, "SeleniumUI": <SeleniumUInputDetail /> }
-    const defaultOption = Object.keys(stepTypeItems)[0]
+function InputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDifferential, textAreaHeight, selectedStepType, setSelectedStepType, selectedTaskComponent, setSelectedTaskComponent, inputAreaContent, stepTypeItems, getComponentFunction }) {
 
     const [inputAreaOpen, setInputAreaOpen] = useState(false)
     const [inputAreaSymbol, setInputAreaSymbol] = useState(`${infoText} ^`)
@@ -26,8 +23,14 @@ function InputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDiffer
         setDiagPaneHeight(newDiagPaneHeight)
     }
 
-    function selectStepType(selectedStepType) {
-        setSelectedStepType(selectedStepType.value)
+    function selectStepType(selectStepTypeEvent) {
+        console.log(`Step type selection changed, new selection: ${selectStepTypeEvent.value}`)
+        setSelectedStepType(selectStepTypeEvent.value)
+        if(inputAreaContent["taskType"] == selectStepTypeEvent.value) {
+            setSelectedTaskComponent(getComponentFunction(selectStepTypeEvent.value, {}))
+        } else {
+            setSelectedTaskComponent(getComponentFunction(selectStepTypeEvent.value))
+        }
     }
 
     return (
@@ -35,11 +38,10 @@ function InputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDiffer
 
             <div style={{ marginTop: "10px" }}>
                 <button onClick={toggleInputArea} style={{ width: "90vh", border: "black", height: "18px", backgroundColor: "grey" }}>{inputAreaSymbol}</button>
-                <div style={{ display: 'flex' }}>
-                    {inputAreaOpen && <Dropdown style={{ float: "left" }} options={Object.keys(stepTypeItems)} onChange={selectStepType} value={defaultOption} placeholder="Step Type" />}
-                    {inputAreaOpen && stepTypeItems[selectedStepType]}
+                <div>
+                    {inputAreaOpen && <Dropdown style={{ float: "left" }} options={Object.keys(stepTypeItems)} onChange={selectStepType} value={selectedStepType} placeholder="Step Type" />}
+                    {inputAreaOpen && selectedTaskComponent}
                 </div>
-                {inputAreaOpen && <textarea style={{ width: "90vh", height: `${textAreaHeight}px`, float: 'bottom' }} ></textarea>}
             </div>
         </>
     )

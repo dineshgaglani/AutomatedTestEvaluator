@@ -13,7 +13,7 @@ function TextUpdaterNode({ data }) {
   const initialActivationEligibility = data.activationEligibility ? data.activationEligibility : ""
   const [activationEligibility, setActivationEligibility] = useState(initialActivationEligibility)
 
-  const initialActivationTask = data.activationTask ? data.activationTask : ""
+  const initialActivationTask = data.activationTask ? JSON.stringify(data.activationTask) : ""
   const [activationTask, setActivationTask] = useState(initialActivationTask)
 
   const onChangeNodeDescription = useCallback((evt) => {

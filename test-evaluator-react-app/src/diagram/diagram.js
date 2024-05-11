@@ -12,6 +12,10 @@ import TextUpdaterNode from '../nodes/TextNode.js';
 import SavedDiagramsModal from '../components/savedDiagramsModal.js';
 import OutputDetail from '../components/outputDetail.js'
 import InputDetail from '../components/inputDetail';
+import HttpApiInputDetail from '../components/httpApiInputDetail';
+import SeleniumUInputDetail from '../components/seleniumUIInputDetail';
+import PythonInputDetail from '../components/pythonInputDetail';
+
 
 function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
 
@@ -25,7 +29,10 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
             "label": "Call Products endpoint",
             "activationEligibilityDescription": "Call Products endpoint",
             "activationEligibility": "",
-            "activationTask": ""
+            "activationTask": {
+              "taskType": "HttpAPI",
+              "taskProps": { "httpMethod": "GET", "httpAddress": "context['baseUrl']/products" }
+            }
           },
           "position": {
             "x": 350.7954178483643,
@@ -52,7 +59,10 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
             "label": "Call Products Id endpoint",
             "activationEligibilityDescription": "Call Products Id endpoint",
             "activationEligibility": "",
-            "activationTask": ""
+            "activationTask": {
+              "taskType": "PythonCode",
+              "taskProps": { "pythonText": "productsIdResp = requests.get(context['baseUrl'] + \"/products/\" + str(currTestData)); return productsIdResp.json()" }
+            }
           },
           "position": {
             "x": 351.41132620533153,
@@ -875,11 +885,38 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
   const [diagPaneHeight, setDiagPaneHeight] = useState(90)
 
   const [diagramsModalOpen, setDiagramsModalOpen] = useState(false)
-  const [inputTextAreaContent, setInputTextAreaContent] = useState("")
+  const [inputAreaContent, setInputAreaContent] = useState({ "taskType": "HttpAPI", "taskProps": { "httpMethod": "GET" } })
   const [outputTextAreaContent, setOutputTextAreaContent] = useState("")
 
+  const [selectedStepType, setSelectedStepType] = useState(inputAreaContent["taskType"])
+
+  //TODO - SHOULD NOT BE INPUTAREACONTENT, SHOULD BE selectedNodeFullObject.data.activationTask["taskProps"]
+  const stepTypeItems = { "HttpAPI": <HttpApiInputDetail taskProps={inputAreaContent['taskProps']} />, "SeleniumUI": <SeleniumUInputDetail taskProps={inputAreaContent['taskProps']} />, "PythonCode": <PythonInputDetail taskProps={inputAreaContent['taskProps']} /> }
+
+  const [selectedTaskComponent, setSelectedTaskComponent] = useState(stepTypeItems[inputAreaContent["taskType"]])
+
   const [evaluationResponse, setEvaluationResponse] = useState({})
-  
+
+  function getInputAreaComponent(selectedStepType, taskPropsProvider = {}) {
+    console.log(`Get component invoked, selectedItem:  ${selectedStepType}`)
+    console.log(`inputAreaContent: ${JSON.stringify(taskPropsProvider)}`)
+
+    switch (selectedStepType) {
+      case "HttpAPI":
+        console.log(`Returning httpApi`)
+        return (<HttpApiInputDetail taskProps={taskPropsProvider["taskProps"]} />)
+
+      case "SeleniumUI":
+        console.log(`Returning SeleniumUI`)
+        return (<SeleniumUInputDetail taskProps={taskPropsProvider["taskProps"]} />)
+
+      default:
+        console.log(`Returning PythonInputDetail`)
+        return (<PythonInputDetail taskProps={taskPropsProvider["taskProps"]} />)
+
+    }
+  }
+
 
   useEffect(() => {
     if (socketOpen) {
@@ -943,20 +980,30 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
 
     }
   }, [socketOpen])
-  
+
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => {
       const selectedNode = changes.find(item => item.selected)
-      if(selectedNode) {
+      if (selectedNode) {
         const selectedNodeFullObject = nds.find(node => node.id == selectedNode.id)
         // console.log(`Selected Node full: ${JSON.stringify(selectedNodeFullObject)}`)
-        if(selectedNodeFullObject) {
-          setInputTextAreaContent(`Id: ${selectedNodeFullObject.id}\nDescription: ${selectedNodeFullObject.data.label}\nactivationEligibilityDescription: ${selectedNodeFullObject.data.activationEligibility}\nactivationTask: ${selectedNodeFullObject.data.activationTask}`)
+        if (selectedNodeFullObject) {
+          // setInputTextAreaContent(`Id: ${selectedNodeFullObject.id}\nDescription: ${selectedNodeFullObject.data.label}\nactivationEligibilityDescription: ${selectedNodeFullObject.data.activationEligibility}\nactivationTask: ${selectedNodeFullObject.data.activationTask}`)
+          if (selectedNodeFullObject.data.activationTask.hasOwnProperty("taskType")) {
+            setInputAreaContent(selectedNodeFullObject.data.activationTask)
+            setSelectedStepType(selectedNodeFullObject.data.activationTask["taskType"])
+            // setSelectedTaskComponent(stepTypeItems[selectedNodeFullObject.data.activationTask["taskType"]])
+            setSelectedTaskComponent(getInputAreaComponent(selectedNodeFullObject.data.activationTask["taskType"], selectedNodeFullObject.data.activationTask))
+          } else {
+            setSelectedStepType("HttpAPI")
+            setSelectedTaskComponent(getInputAreaComponent("HttpAPI"))
+          }
+
           console.log(`testData.length > 0: ${testData.length > 0}, selectedTestDataIndex >= 0: ${selectedTestDataIndex >= 0}`)
-          if(testData.length > 0 && selectedTestDataIndex >= 0) {
+          if (testData.length > 0 && selectedTestDataIndex >= 0) {
             const selectedTestDataValue = testData[selectedTestDataIndex]["value"]
             console.log(`selectedTestData: ${JSON.stringify(selectedTestDataValue)}`)
-            if(evaluationResponse && evaluationResponse["test_data_to_node_output"] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id]) {
+            if (evaluationResponse && evaluationResponse["test_data_to_node_output"] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id]) {
               setOutputTextAreaContent(evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id])
             } else {
               setOutputTextAreaContent("")
@@ -1029,7 +1076,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
           nodeTypes={nodeTypes} />
         <div id="outputArea" style={{ float: "bottom", border: "black" }}>
           {/* <OutputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Input" textAreaValue={inputTextAreaContent}></OutputDetail> */}
-          <InputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Input" textAreaValue={inputTextAreaContent}></InputDetail>
+          <InputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedStepType={selectedStepType} setSelectedStepType={setSelectedStepType} selectedTaskComponent={selectedTaskComponent} setSelectedTaskComponent={setSelectedTaskComponent} inputAreaContent={inputAreaContent} stepTypeItems={stepTypeItems} getComponentFunction={getInputAreaComponent}></InputDetail>
           <OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" textAreaValue={outputTextAreaContent}></OutputDetail>
         </div>
       </div>
