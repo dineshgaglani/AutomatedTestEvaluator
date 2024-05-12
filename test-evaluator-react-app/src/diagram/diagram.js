@@ -879,6 +879,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
 
   const initPosition = { 'x': 100, 'y': 150 }
   const [nodes, setNodes] = useState([]);
+  const [currSelectedNode, setCurrSelectedNode] = useState({})
   const [edges, setEdges] = useState([]);
   const [nodePosition, setPosition] = useState(initPosition)
 
@@ -890,7 +891,6 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
 
   const [selectedStepType, setSelectedStepType] = useState(inputAreaContent["taskType"])
 
-  //TODO - SHOULD NOT BE INPUTAREACONTENT, SHOULD BE selectedNodeFullObject.data.activationTask["taskProps"]
   const stepTypeItems = { "HttpAPI": <HttpApiInputDetail taskProps={inputAreaContent['taskProps']} />, "SeleniumUI": <SeleniumUInputDetail taskProps={inputAreaContent['taskProps']} />, "PythonCode": <PythonInputDetail taskProps={inputAreaContent['taskProps']} /> }
 
   const [selectedTaskComponent, setSelectedTaskComponent] = useState(stepTypeItems[inputAreaContent["taskType"]])
@@ -988,6 +988,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
         const selectedNodeFullObject = nds.find(node => node.id == selectedNode.id)
         // console.log(`Selected Node full: ${JSON.stringify(selectedNodeFullObject)}`)
         if (selectedNodeFullObject) {
+          setCurrSelectedNode(selectedNodeFullObject)
           // setInputTextAreaContent(`Id: ${selectedNodeFullObject.id}\nDescription: ${selectedNodeFullObject.data.label}\nactivationEligibilityDescription: ${selectedNodeFullObject.data.activationEligibility}\nactivationTask: ${selectedNodeFullObject.data.activationTask}`)
           if (selectedNodeFullObject.data.activationTask.hasOwnProperty("taskType")) {
             setInputAreaContent(selectedNodeFullObject.data.activationTask)
@@ -1046,6 +1047,21 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
     })
   }
 
+  function setNodeActivationTaskFromInput(newInputAreaContent) {
+    setNodes((prevNodes) => {
+      const newNodes = prevNodes.map(node => {
+        if (node.id == currSelectedNode['id']) {
+          console.log(`Node to update: ${JSON.stringify(node)}, with new activationTask: ${JSON.stringify(newInputAreaContent)}`)
+          const changedActivationTaskData = { ...node.data, "activationTask": newInputAreaContent}
+          return { ...node, data: changedActivationTaskData }
+        }
+        return node
+      })
+
+      return newNodes
+    })
+  }
+
   const openDiagram = useCallback((diagramIndex) => {
     console.log(`Diagram: ${diagramIndex} clicked!`)
     const diagramKey = Object.keys(allDiagrams)[diagramIndex]
@@ -1076,7 +1092,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
           nodeTypes={nodeTypes} />
         <div id="outputArea" style={{ float: "bottom", border: "black" }}>
           {/* <OutputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Input" textAreaValue={inputTextAreaContent}></OutputDetail> */}
-          <InputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedStepType={selectedStepType} setSelectedStepType={setSelectedStepType} selectedTaskComponent={selectedTaskComponent} setSelectedTaskComponent={setSelectedTaskComponent} inputAreaContent={inputAreaContent} stepTypeItems={stepTypeItems} getComponentFunction={getInputAreaComponent}></InputDetail>
+          <InputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedStepType={selectedStepType} setSelectedStepType={setSelectedStepType} selectedTaskComponent={selectedTaskComponent} setSelectedTaskComponent={setSelectedTaskComponent} inputAreaContent={inputAreaContent} stepTypeItems={stepTypeItems} getComponentFunction={getInputAreaComponent} setNodeInput={setNodeActivationTaskFromInput}></InputDetail>
           <OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" textAreaValue={outputTextAreaContent}></OutputDetail>
         </div>
       </div>

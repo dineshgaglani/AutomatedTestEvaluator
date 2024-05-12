@@ -45,3 +45,26 @@ def createTreeFromJson(nodesJson, edgesJson):
 
     #Assumption - Lowest Id node is the root node - Fix give special un-editable description to root node
     return nodesIdMap[min(list(nodesIdMap.keys()))]
+
+def translateTaskObjToTaskFn(taskObj):
+    if taskObj["taskType"] == "HttpAPI":
+        return translateHttpTaskFn(taskObj["taskProps"])
+    
+    elif taskObj["taskType"] == "PythonCode":
+        return translatePythonTaskFn(taskObj["taskProps"])
+
+    elif taskObj["taskType"] == "SeleniumUI":
+        return translateSeleniumUITaskFn(taskObj["taskProps"])
+
+def translateHttpTaskFn(httpTaskProps):
+    # { "httpMethod": "GET", "httpAddress": "context['baseUrl']/products" } becomes "return requests.get(context['baseUrl'] + \"/products\").json()"
+    if httpTaskProps["httpMethod"] == "GET" or httpTaskProps["httpMethod"] == "DELETE":
+        return f'requests.{httpTaskProps["httpMethod"].lower()}(\'{httpTaskProps["httpAddress"]}\').json()'
+    elif httpTaskProps["httpMethod"] == "POST" or httpTaskProps["httpMethod"] == "PUT":
+        return f'requests.{httpTaskProps["httpMethod"].lower()}(\'{httpTaskProps["httpAddress"]}\', data={httpTaskProps["httpData"]}).json()'
+
+def translatePythonTaskFn(pythonTaskProps): 
+    return pythonTaskProps["pythonText"]
+
+def translateSeleniumUITaskFn(seleniumUITaskProps):
+    return "pass"

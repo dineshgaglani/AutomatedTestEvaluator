@@ -30,11 +30,11 @@ function TextUpdaterNode({ data }) {
     console.log(`Activation Eligibility change: ${data["activationEligibility"]}`)
   }, []);
 
-  const onChangeActivationTask = useCallback((evt) => {
-    const value = evt.target.value
-    setActivationTask(value)
-    data["activationTask"] = value
-  }, []);
+  // const onChangeActivationTask = useCallback((evt) => {
+  //   const value = evt.target.value
+  //   setActivationTask(value)
+  //   data["activationTask"] = value
+  // }, []);
 
   return (
     <>
@@ -63,10 +63,17 @@ function TextUpdaterNode({ data }) {
         <br />
 
 
-        {showTextareas ? (
+        {/* {showTextareas ? (
           <div id="activationTaskSection">
             <label htmlFor="activationTask">Activation Task:</label>
             <textarea id="activationTask" name="activationTask" value={activationTask} onChange={onChangeActivationTask} className="nodrag"></textarea>
+          </div>
+        ) : null} */}
+
+        {showTextareas ? (
+          <div id="activationTaskSection">
+            <label htmlFor="activationTask">Activation Task:</label>
+            <textarea id="activationTask" name="activationTask" value={activationTask} disabled={true} className="nodrag"></textarea>
           </div>
         ) : null}
 

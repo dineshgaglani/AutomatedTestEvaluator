@@ -7,7 +7,7 @@ import HttpApiInputDetail from './httpApiInputDetail';
 import PythonInputDetail from './pythonInputDetail';
 import SeleniumUInputDetail from './seleniumUIInputDetail';
 
-function InputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDifferential, textAreaHeight, selectedStepType, setSelectedStepType, selectedTaskComponent, setSelectedTaskComponent, inputAreaContent, stepTypeItems, getComponentFunction }) {
+function InputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDifferential, textAreaHeight, selectedStepType, setSelectedStepType, selectedTaskComponent, setSelectedTaskComponent, inputAreaContent, stepTypeItems, getComponentFunction, setNodeInput }) {
 
     const [inputAreaOpen, setInputAreaOpen] = useState(false)
     const [inputAreaSymbol, setInputAreaSymbol] = useState(`${infoText} ^`)
@@ -33,13 +33,21 @@ function InputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDiffer
         }
     }
 
+    function saveNodeInput(evt) {
+        console.log(`Saving node input content`)
+        setNodeInput({"taskType": selectedStepType, "taskProps": {}})
+    } 
+
     return (
         <>
 
             <div style={{ marginTop: "10px" }}>
                 <button onClick={toggleInputArea} style={{ width: "90vh", border: "black", height: "18px", backgroundColor: "grey" }}>{inputAreaSymbol}</button>
                 <div>
-                    {inputAreaOpen && <Dropdown style={{ float: "left" }} options={Object.keys(stepTypeItems)} onChange={selectStepType} value={selectedStepType} placeholder="Step Type" />}
+                    <div style={{ display: 'flex' }}>
+                        {inputAreaOpen && <Dropdown style={{ float: "left" }} options={Object.keys(stepTypeItems)} onChange={selectStepType} value={selectedStepType} placeholder="Step Type" />}
+                        {inputAreaOpen && <button style={{marginLeft: "20px"}} onClick={saveNodeInput}>Save</button>}
+                    </div>
                     {inputAreaOpen && selectedTaskComponent}
                 </div>
             </div>
