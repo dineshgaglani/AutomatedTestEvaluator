@@ -1,33 +1,42 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Dropdown from 'react-dropdown';
 import 'react-dropdown/style.css';
 
-function HttpApiInputDetail({taskProps}) {
+function HttpApiInputDetail({ nodeHttpMethod, nodeHttpAddress, setHttpMethod, setHttpAddress }) {
 
-    console.log(`in httpinputdetail: ${JSON.stringify(taskProps)}`)
+    console.log(`in httpinputdetail, selected node params: ${nodeHttpMethod}, ${nodeHttpAddress}`)
 
     const [postSelected, setPostSelected] = useState(false)
 
     const httpMethodItems = ["GET", "POST", "PUT", "DELETE"]
-    const defaultOption = httpMethodItems[0];
+
+    // useEffect(() => {
+    //     setHttpMethod(httpMethod)
+    //     setHttpAddress(httpAddress)
+    // }, [nodeHttpMethod, nodeHttpAddress])
 
     const selectMethodType = (selectedMethodEvent) => {
         const selectedMethod = selectedMethodEvent.value
-        if(["POST", "PUT"].includes(selectedMethod)) {
+        // setHttpMethod(selectedMethod)
+        if (["POST", "PUT"].includes(selectedMethod)) {
             setPostSelected(true)
         } else {
             setPostSelected(false)
         }
     }
-    
+
+    function onChangeHttpAddress(evt) {
+        console.log(evt.target.value)
+    }
+
     return (
         <>
             <div style={{ display: 'flex' }}>
-                <Dropdown options={httpMethodItems} value={taskProps ? taskProps['httpMethod'] : defaultOption} onChange={selectMethodType} placeholder="HTTP Method" />
-                <input readOnly={true} placeholder="Http Address" style={{ width: '70vh' }} value={taskProps ? taskProps['httpAddress'] : ""} />
+                <Dropdown options={httpMethodItems} value={nodeHttpMethod} onChange={selectMethodType} placeholder="HTTP Method" />
+                <input readOnly={true} placeholder="Http Address" style={{ width: '70vh' }} value={nodeHttpAddress} />
             </div>
-            {postSelected && <textarea style={{ width: "79vh", height: `50px`, float: 'bottom' }}></textarea> }
+            {postSelected && <textarea style={{ width: "79vh", height: `50px`, float: 'bottom' }}></textarea>}
         </>
     )
 }

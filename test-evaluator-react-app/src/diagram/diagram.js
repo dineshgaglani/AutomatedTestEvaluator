@@ -15,6 +15,7 @@ import InputDetail from '../components/inputDetail';
 import HttpApiInputDetail from '../components/httpApiInputDetail';
 import SeleniumUInputDetail from '../components/seleniumUIInputDetail';
 import PythonInputDetail from '../components/pythonInputDetail';
+import InputDetailOptimized from '../components/inputDetailOptimized';
 
 
 function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
@@ -31,7 +32,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
             "activationEligibility": "",
             "activationTask": {
               "taskType": "HttpAPI",
-              "taskProps": { "httpMethod": "GET", "httpAddress": "context['baseUrl']/products" }
+              "taskProps": { "httpMethod": "POST", "httpAddress": "context['baseUrl']/products" }
             }
           },
           "position": {
@@ -898,8 +899,8 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
   const [evaluationResponse, setEvaluationResponse] = useState({})
 
   function getInputAreaComponent(selectedStepType, taskPropsProvider = {}) {
-    console.log(`Get component invoked, selectedItem:  ${selectedStepType}`)
-    console.log(`inputAreaContent: ${JSON.stringify(taskPropsProvider)}`)
+    // console.log(`Get component invoked, selectedItem:  ${selectedStepType}`)
+    // console.log(`inputAreaContent: ${JSON.stringify(taskPropsProvider)}`)
 
     switch (selectedStepType) {
       case "HttpAPI":
@@ -990,15 +991,16 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
         if (selectedNodeFullObject) {
           setCurrSelectedNode(selectedNodeFullObject)
           // setInputTextAreaContent(`Id: ${selectedNodeFullObject.id}\nDescription: ${selectedNodeFullObject.data.label}\nactivationEligibilityDescription: ${selectedNodeFullObject.data.activationEligibility}\nactivationTask: ${selectedNodeFullObject.data.activationTask}`)
-          if (selectedNodeFullObject.data.activationTask.hasOwnProperty("taskType")) {
-            setInputAreaContent(selectedNodeFullObject.data.activationTask)
-            setSelectedStepType(selectedNodeFullObject.data.activationTask["taskType"])
-            // setSelectedTaskComponent(stepTypeItems[selectedNodeFullObject.data.activationTask["taskType"]])
-            setSelectedTaskComponent(getInputAreaComponent(selectedNodeFullObject.data.activationTask["taskType"], selectedNodeFullObject.data.activationTask))
-          } else {
-            setSelectedStepType("HttpAPI")
-            setSelectedTaskComponent(getInputAreaComponent("HttpAPI"))
-          }
+          
+          // if (selectedNodeFullObject.data.activationTask.hasOwnProperty("taskType")) {
+          //   setInputAreaContent(selectedNodeFullObject.data.activationTask)
+          //   setSelectedStepType(selectedNodeFullObject.data.activationTask["taskType"])
+          //   // setSelectedTaskComponent(stepTypeItems[selectedNodeFullObject.data.activationTask["taskType"]])
+          //   setSelectedTaskComponent(getInputAreaComponent(selectedNodeFullObject.data.activationTask["taskType"], selectedNodeFullObject.data.activationTask))
+          // } else {
+          //   setSelectedStepType("HttpAPI")
+          //   setSelectedTaskComponent(getInputAreaComponent("HttpAPI"))
+          // }
 
           console.log(`testData.length > 0: ${testData.length > 0}, selectedTestDataIndex >= 0: ${selectedTestDataIndex >= 0}`)
           if (testData.length > 0 && selectedTestDataIndex >= 0) {
@@ -1092,7 +1094,8 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
           nodeTypes={nodeTypes} />
         <div id="outputArea" style={{ float: "bottom", border: "black" }}>
           {/* <OutputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Input" textAreaValue={inputTextAreaContent}></OutputDetail> */}
-          <InputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedStepType={selectedStepType} setSelectedStepType={setSelectedStepType} selectedTaskComponent={selectedTaskComponent} setSelectedTaskComponent={setSelectedTaskComponent} inputAreaContent={inputAreaContent} stepTypeItems={stepTypeItems} getComponentFunction={getInputAreaComponent} setNodeInput={setNodeActivationTaskFromInput}></InputDetail>
+          {/* <InputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedStepType={selectedStepType} setSelectedStepType={setSelectedStepType} selectedTaskComponent={selectedTaskComponent} setSelectedTaskComponent={setSelectedTaskComponent} inputAreaContent={inputAreaContent} stepTypeItems={stepTypeItems} getComponentFunction={getInputAreaComponent} setNodeInput={setNodeActivationTaskFromInput}></InputDetail> */}
+          <InputDetailOptimized id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedNode={currSelectedNode}></InputDetailOptimized>
           <OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" textAreaValue={outputTextAreaContent}></OutputDetail>
         </div>
       </div>
