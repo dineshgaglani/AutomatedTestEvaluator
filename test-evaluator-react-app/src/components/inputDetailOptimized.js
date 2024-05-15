@@ -25,7 +25,9 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
 
     console.log(`httpMethod: ${httpMethod}, httpAddress: ${httpAddress} in inputDetailsOpitimized`)
 
-    const stepTypeItems = { "HttpAPI": <HttpApiInputDetail nodeHttpMethod={httpMethod} nodeHttpAddress={httpAddress} setHttpMethod={setHttpMethod} setHttpAddress={setHttpAddress} />, "SeleniumUI": <SeleniumUInputDetail taskProps={taskProps} />, "PythonCode": <PythonInputDetail taskProps={taskProps} /> }
+    const [pythonText, setPythonText] = useState(taskProps && taskProps['pythonText'] ? taskProps['pythonText'] : "")
+
+    const stepTypeItems = { "HttpAPI": <HttpApiInputDetail nodeHttpMethod={httpMethod} nodeHttpAddress={httpAddress} setHttpMethod={setHttpMethod} setHttpAddress={setHttpAddress} />, "SeleniumUI": <SeleniumUInputDetail taskProps={taskProps} />, "PythonCode": <PythonInputDetail nodePythonText={pythonText} setPythonText={setPythonText} /> }
 
     const [inputAreaOpen, setInputAreaOpen] = useState(false)
     const [inputAreaSymbol, setInputAreaSymbol] = useState(`${infoText} ^`)
@@ -51,8 +53,12 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
 
     function saveNodeInput() {
         let newTaskProps = {}
-        if(selectedStepType == "HttpAPI") {
-            newTaskProps = {"httpMethod": httpMethod, "httpAddress": httpAddress}
+        if (selectedStepType == "HttpAPI") {
+            newTaskProps = { "httpMethod": httpMethod, "httpAddress": httpAddress }
+        }
+
+        if(selectedStepType == "PythonCode") {
+            newTaskProps = { "pythonText": pythonText }
         }
 
         console.log(`taskProps to write: ${JSON.stringify(newTaskProps)}`)
@@ -66,16 +72,24 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
         console.log(`Re-rendering inputDetailsOptimized component`)
         const selectedNodeActivationTaskType = selectedNode && selectedNode['data'] ? selectedNode['data']['activationTask']['taskType'] : "HttpAPI"
 
-        const nodeHttpMethod = taskProps && taskProps['httpMethod'] ? taskProps['httpMethod'] : "GET"
-        const nodeHttpAddress = taskProps && taskProps['httpAddress'] ? taskProps['httpAddress'] : ""
-        setHttpMethod(nodeHttpMethod)
-        setHttpAddress(nodeHttpAddress)
+        if (selectedStepType == "HttpAPI") {
+            const nodeHttpMethod = taskProps && taskProps['httpMethod'] ? taskProps['httpMethod'] : "GET"
+            const nodeHttpAddress = taskProps && taskProps['httpAddress'] ? taskProps['httpAddress'] : ""
+            setHttpMethod(nodeHttpMethod)
+            setHttpAddress(nodeHttpAddress)
+        }
+
+        if (selectedStepType == "PythonCode") {
+            const nodePythonText = taskProps && taskProps['pythonText'] ? taskProps['pythonText'] : ""
+            setPythonText(nodePythonText)
+        }
+
 
         selectStepType({ "value": selectedNodeActivationTaskType })
         // if(selectedNode && selectedNode['data'] && selectedNode['data']['activationTask']['taskType']) {
         //     setSelectedStepTaskComponent(stepTypeItems[selectedNode['data']['activationTask']['taskType']])
         // }
-        
+
     }, [selectedNode]);
 
     return (
