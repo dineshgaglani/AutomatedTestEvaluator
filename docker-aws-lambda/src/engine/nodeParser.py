@@ -49,7 +49,7 @@ def createTreeFromJson(nodesJson, edgesJson):
 
 def translateTaskObjToTaskFn(taskObj):
     if taskObj["taskType"] == "HttpAPI":
-        return translateHttpTaskFn(taskObj["taskProps"])
+        return "return " + translateHttpTaskFn(taskObj["taskProps"])
     
     elif taskObj["taskType"] == "PythonCode":
         return translatePythonTaskFn(taskObj["taskProps"])
@@ -58,11 +58,11 @@ def translateTaskObjToTaskFn(taskObj):
         return translateSeleniumUITaskFn(taskObj["taskProps"])
 
 def translateHttpTaskFn(httpTaskProps):
-    # { "httpMethod": "GET", "httpAddress": "context['baseUrl']/products" } becomes "return requests.get(context['baseUrl'] + \"/products\").json()"
+    # { "httpMethod": "GET", "httpAddress": "context['baseUrl']/products" } becomes "return requests.get(f'{context['baseUrl']}/products\").json()"
     if httpTaskProps["httpMethod"] == "GET" or httpTaskProps["httpMethod"] == "DELETE":
-        return f'requests.{httpTaskProps["httpMethod"].lower()}(\'{httpTaskProps["httpAddress"]}\').json()'
+        return f'requests.{httpTaskProps["httpMethod"].lower()}(f\'{httpTaskProps["httpAddress"]}\').json()'
     elif httpTaskProps["httpMethod"] == "POST" or httpTaskProps["httpMethod"] == "PUT":
-        return f'requests.{httpTaskProps["httpMethod"].lower()}(\'{httpTaskProps["httpAddress"]}\', data={httpTaskProps["httpData"]}).json()'
+        return f'requests.{httpTaskProps["httpMethod"].lower()}(f\'{httpTaskProps["httpAddress"]}\', data={httpTaskProps["httpData"]}).json()'
 
 def translatePythonTaskFn(pythonTaskProps): 
     return pythonTaskProps["pythonText"]

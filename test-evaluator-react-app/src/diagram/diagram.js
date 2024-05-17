@@ -32,7 +32,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
             "activationEligibility": "",
             "activationTask": {
               "taskType": "HttpAPI",
-              "taskProps": { "httpMethod": "GET", "httpAddress": "context[\"baseUrl\"]/products" }
+              "taskProps": { "httpMethod": "GET", "httpAddress": "{context[\"baseUrl\"]}/products" }
             }
           },
           "position": {
