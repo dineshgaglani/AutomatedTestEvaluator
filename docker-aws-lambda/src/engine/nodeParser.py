@@ -25,7 +25,8 @@ def parseNodes(json):
         node.setActivationEligibility(locals()[activation_fn_name], nodeJson['data']['activationEligibilityDescription'])
         
         task_fn_name = "".join(ch for ch in node.description if ch.isalnum()) + "ActivationTask"
-        activation_task_multiline = nodeJson['data']['activationTask'].replace(';', '\n   ')
+        # activation_task_multiline = nodeJson['data']['activationTask'].replace(';', '\n   ')
+        activation_task_multiline = translateTaskObjToTaskFn(nodeJson['data']['activationTask']).replace(';', '\n   ')
         #TODO - create a string instead of function, pass to a setActivationEligibilityStr member function
         exec(f'def {task_fn_name}(priorActionResults, currTestData, context):\n    ' + activation_task_multiline)
         print(f'def {task_fn_name}(priorActionResults, currTestData, context):\n    ' + activation_task_multiline)
