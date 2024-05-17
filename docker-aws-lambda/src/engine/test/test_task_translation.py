@@ -57,3 +57,7 @@ def testPythonRequestsGetCall():
 
     assert getCallResult['id'] == 1
     assert getCallResult['title'] == "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops"
+
+# TODO - Test with a variable (example { "httpMethod": "GET", "httpAddress": "context['baseUrl']/products/1" } ) in addition to the hardcoded { "httpMethod": "GET", "httpAddress": "https://fakestoreapi.com/products/1" }
+# This should address the 2 issues seen on prod - One was because we use single quotes on both translation and input (resulting in function created like this - requests.get('context['baseUrl']/products').json()) (2 single quotes)
+# Second issue - The context['baseUrl'] was being sent as string literal since the quote was covering the variable so it was not being evaluated (it was - 'context["baseUrl"]/products', instead of context["baseUrl"] + '/products')

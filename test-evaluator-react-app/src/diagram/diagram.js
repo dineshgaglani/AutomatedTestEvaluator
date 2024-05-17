@@ -32,7 +32,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
             "activationEligibility": "",
             "activationTask": {
               "taskType": "HttpAPI",
-              "taskProps": { "httpMethod": "POST", "httpAddress": "context['baseUrl']/products" }
+              "taskProps": { "httpMethod": "GET", "httpAddress": "context[\"baseUrl\"]/products" }
             }
           },
           "position": {
@@ -62,7 +62,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
             "activationEligibility": "",
             "activationTask": {
               "taskType": "PythonCode",
-              "taskProps": { "pythonText": "productsIdResp = requests.get(context['baseUrl'] + \"/products/\" + str(currTestData)); return productsIdResp.json()" }
+              "taskProps": { "pythonText": "productsIdResp = requests.get(context[\"baseUrl\"] + \"/products/\" + str(currTestData)); return productsIdResp.json()" }
             }
           },
           "position": {
@@ -899,8 +899,8 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
   const [evaluationResponse, setEvaluationResponse] = useState({})
 
   function getInputAreaComponent(selectedStepType, taskPropsProvider = {}) {
-    // console.log(`Get component invoked, selectedItem:  ${selectedStepType}`)
-    // console.log(`inputAreaContent: ${JSON.stringify(taskPropsProvider)}`)
+    console.log(`Get component invoked, selectedItem:  ${selectedStepType}`)
+    console.log(`inputAreaContent: ${JSON.stringify(taskPropsProvider)}`)
 
     switch (selectedStepType) {
       case "HttpAPI":

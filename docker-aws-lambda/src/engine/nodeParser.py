@@ -28,8 +28,8 @@ def parseNodes(json):
         # activation_task_multiline = nodeJson['data']['activationTask'].replace(';', '\n   ')
         activation_task_multiline = translateTaskObjToTaskFn(nodeJson['data']['activationTask']).replace(';', '\n   ')
         #TODO - create a string instead of function, pass to a setActivationEligibilityStr member function
-        exec(f'def {task_fn_name}(priorActionResults, currTestData, context):\n    ' + activation_task_multiline)
         print(f'def {task_fn_name}(priorActionResults, currTestData, context):\n    ' + activation_task_multiline)
+        exec(f'def {task_fn_name}(priorActionResults, currTestData, context):\n    ' + activation_task_multiline)
         node.assignActivationTask(locals()[task_fn_name])
         nodesIdMap[nodeJson['id']] = node
     
