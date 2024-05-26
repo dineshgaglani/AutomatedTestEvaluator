@@ -9,7 +9,7 @@ import SeleniumUInputDetail from "./seleniumUIInputDetail"
 
 function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, heightDifferential, textAreaHeight, selectedNode }) {
     // console.log(`selectedNode in inputDetailOptimized: ${JSON.stringify(selectedNode)}`)
-    const taskProps = selectedNode && selectedNode['data'] ? selectedNode['data']['activationTask']['taskProps'] : {}
+    const taskProps = selectedNode && selectedNode['data'] && selectedNode['data']['activationTask'] ? selectedNode['data']['activationTask']['taskProps'] : {}
 
     // Child component params
     // const nodeHttpMethod = taskProps && taskProps['httpMethod'] ? taskProps['httpMethod'] : "GET"
@@ -32,8 +32,8 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
     const [inputAreaOpen, setInputAreaOpen] = useState(false)
     const [inputAreaSymbol, setInputAreaSymbol] = useState(`${infoText} ^`)
 
-    const [selectedStepType, setSelectedStepType] = useState(selectedNode && selectedNode['data'] ? selectedNode['data']['activationTask']['taskType'] : "HttpAPI")
-    const [selectedStepTaskComponent, setSelectedStepTaskComponent] = useState(selectedNode && selectedNode['data'] ? stepTypeItems[selectedNode['data']['activationTask']['taskType']] : <HttpApiInputDetail taskProps={{}} />)
+    const [selectedStepType, setSelectedStepType] = useState(selectedNode && selectedNode['data'] && selectedNode['data']['activationTask'] ? selectedNode['data']['activationTask']['taskType'] : "HttpAPI")
+    const [selectedStepTaskComponent, setSelectedStepTaskComponent] = useState(selectedNode && selectedNode['data'] && selectedNode['data']['activationTask'] ? stepTypeItems[selectedNode['data']['activationTask']['taskType']] : <HttpApiInputDetail taskProps={{}} />)
 
     function toggleInputArea() {
         const origInputAreaOpen = inputAreaOpen
@@ -70,7 +70,7 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
 
     useEffect(() => {
         console.log(`Re-rendering inputDetailsOptimized component`)
-        const selectedNodeActivationTaskType = selectedNode && selectedNode['data'] ? selectedNode['data']['activationTask']['taskType'] : "HttpAPI"
+        const selectedNodeActivationTaskType = selectedNode && selectedNode['data'] && selectedNode['data']['activationTask'] ? selectedNode['data']['activationTask']['taskType'] : "HttpAPI"
 
         if (selectedStepType == "HttpAPI") {
             const nodeHttpMethod = taskProps && taskProps['httpMethod'] ? taskProps['httpMethod'] : "GET"

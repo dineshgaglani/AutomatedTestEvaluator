@@ -5,6 +5,12 @@ import sys
 import boto3
 import json
 
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # Add the directory to sys.path
@@ -99,7 +105,32 @@ def handler(event, context):
     for keyVal in envData:
         print(f'envData: keyVal["key"] {keyVal["key"]}, keyVal["value"] {keyVal["value"]}')
         appContext[keyVal['key']] = keyVal['value']
+
     print(f'appContext: {json.dumps(appContext)}')
+
+    # Insert the remote selenium driver on app context.
+    try:
+        devicefarm_client = boto3.client("devicefarm", region_name="us-west-2")
+    
+        # Generate a TestGrid URL
+        testgrid_url_response = devicefarm_client.create_test_grid_url(
+            projectArn="arn:aws:devicefarm:us-west-2:660023757134:testgrid-project:4952174f-ef60-4997-b376-dc01f037abf6",
+            expiresInSeconds=300
+        )
+        
+        # Set up Firefox options
+        options = Options()
+        
+        # Create a new remote WebDriver session with options
+        driver = webdriver.Remote(
+            command_executor=testgrid_url_response["url"],
+            options=options
+        )
+        appContext['webUiDriver'] = driver
+        print("Remote selenium driver set on app context as 'webUiDriver'")
+
+    except Exception as error:
+        print("An exception occurred when adding remote driver to context:", error)
 
     connectionId = event.get('connectionId')
     domain = event.get('domain')
@@ -109,6 +140,7 @@ def handler(event, context):
     
     try:
         executeFlow(flow, testData, appContext, globalVisited)
+        appContext['webUiDriver'].quit()
         return {'statusCode': 200, 'body': 'Execution completed successfully.'}
     except Exception as e:
         print(f'Error starting execution: {e}')

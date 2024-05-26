@@ -875,6 +875,123 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
           "id": "reactflow__edge-6a-4"
         }
       ]
+    },
+    "UIAPIMix": {
+      "nodes": [
+        {
+          "id": "1",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 1,
+            "label": "Api Call",
+            "activationEligibilityDescription": "",
+            "activationEligibility": "return True",
+            "activationTask": {
+              "taskType": "HttpAPI",
+              "taskProps": {
+                "httpMethod": "GET",
+                "httpAddress": "{context[\"baseUrl\"]}/products"
+              }
+            }
+          },
+          "position": {
+            "x": 364,
+            "y": 44
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 328,
+          "height": 147,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 364,
+            "y": 44
+          },
+          "dragging": false
+        },
+        {
+          "id": "2",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 2,
+            "label": "UI Call to wikipeda",
+            "activationEligibilityDescription": "",
+            "activationEligibility": "return True",
+            "activationTask": {
+              "taskType": "PythonCode",
+              "taskProps": {
+                "pythonText": "context[\"webUiDriver\"].get(\"https://wikipedia.org\"); time.sleep(5)"
+              }
+            }
+          },
+          "position": {
+            "x": 208,
+            "y": 256
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 328,
+          "height": 147,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 208,
+            "y": 256
+          },
+          "dragging": false
+        },
+        {
+          "id": "3",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 3,
+            "label": "UI call to google",
+            "activationEligibilityDescription": "",
+            "activationEligibility": "return True",
+            "activationTask": {
+              "taskType": "PythonCode",
+              "taskProps": {
+                "pythonText": "context[\"webUiDriver\"].get(\"https://google.com\"); time.sleep(5)"
+              }
+            }
+          },
+          "position": {
+            "x": 582,
+            "y": 252
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 328,
+          "height": 147,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 582,
+            "y": 252
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "1",
+          "sourceHandle": "a",
+          "target": "2",
+          "targetHandle": null,
+          "id": "reactflow__edge-1a-2"
+        },
+        {
+          "source": "1",
+          "sourceHandle": "a",
+          "target": "3",
+          "targetHandle": null,
+          "id": "reactflow__edge-1a-3"
+        }
+      ]
     }
   }
 
@@ -991,7 +1108,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
         if (selectedNodeFullObject) {
           setCurrSelectedNode(selectedNodeFullObject)
           // setInputTextAreaContent(`Id: ${selectedNodeFullObject.id}\nDescription: ${selectedNodeFullObject.data.label}\nactivationEligibilityDescription: ${selectedNodeFullObject.data.activationEligibility}\nactivationTask: ${selectedNodeFullObject.data.activationTask}`)
-          
+
           // if (selectedNodeFullObject.data.activationTask.hasOwnProperty("taskType")) {
           //   setInputAreaContent(selectedNodeFullObject.data.activationTask)
           //   setSelectedStepType(selectedNodeFullObject.data.activationTask["taskType"])
@@ -1054,7 +1171,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
       const newNodes = prevNodes.map(node => {
         if (node.id == currSelectedNode['id']) {
           console.log(`Node to update: ${JSON.stringify(node)}, with new activationTask: ${JSON.stringify(newInputAreaContent)}`)
-          const changedActivationTaskData = { ...node.data, "activationTask": newInputAreaContent}
+          const changedActivationTaskData = { ...node.data, "activationTask": newInputAreaContent }
           return { ...node, data: changedActivationTaskData }
         }
         return node

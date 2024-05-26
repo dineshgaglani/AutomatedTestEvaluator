@@ -57,6 +57,14 @@ Resources:
                           - "execute-api:Invoke",
                           - "execute-api:ManageConnections"
                         Resource: "arn:aws:execute-api:us-east-1:660023757134:0ig7g8kowd/test/*"
+                - PolicyName: NodeExecutorDeviceFarmGridCreationPolicy
+                    PolicyDocument:
+                      Version: '2012-10-17'
+                      Statement:
+                        - Effect: Allow
+                        Action:
+                          - "devicefarm:CreateTestGridUrl",
+                        Resource: "arn:aws:devicefarm:us-west-2:660023757134:testgrid-project:*"
   
   NodeParserLambdaExecutionRole:
     Type: AWS::IAM::Role
