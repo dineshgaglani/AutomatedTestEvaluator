@@ -1,0 +1,8 @@
+pyvirtualdisplay
+awslambdaric
+selenium
+boto3
+graphviz
+requests
+dill
+pytest
