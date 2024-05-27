@@ -992,6 +992,83 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
           "id": "reactflow__edge-1a-3"
         }
       ]
+    },
+    "UITest": {
+      "nodes": [
+        {
+          "id": "1",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 1,
+            "label": "open google",
+            "activationEligibilityDescription": "",
+            "activationEligibility": "return True",
+            "activationTask": {
+              "taskType": "PythonCode",
+              "taskProps": {
+                "pythonText": "context[\"webUiDriver\"].get(context[\"baseUrl\"]); time.sleep(5)"
+              }
+            }
+          },
+          "position": {
+            "x": 256,
+            "y": 35
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 328,
+          "height": 147,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 256,
+            "y": 35
+          },
+          "dragging": false
+        },
+        {
+          "id": "2",
+          "type": "textUpdater",
+          "data": {
+            "nodeId": 2,
+            "label": "search for searchString",
+            "activationEligibilityDescription": "",
+            "activationEligibility": "return True",
+            "activationTask": {
+              "taskType": "PythonCode",
+              "taskProps": {
+                "pythonText": "context[\"webUiDriver\"].find_element(By.ID, \"APjFqb\").send_keys(currTestData[\"searchString\"]); time.sleep(5)"
+              }
+            }
+          },
+          "position": {
+            "x": 251,
+            "y": 248
+          },
+          "style": {
+            "backgroundColor": "#ff0072",
+            "color": "white"
+          },
+          "width": 328,
+          "height": 147,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 251,
+            "y": 248
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "1",
+          "sourceHandle": "a",
+          "target": "2",
+          "targetHandle": null,
+          "id": "reactflow__edge-1a-2"
+        }
+      ]
     }
   }
 
@@ -1121,7 +1198,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
 
           console.log(`testData.length > 0: ${testData.length > 0}, selectedTestDataIndex >= 0: ${selectedTestDataIndex >= 0}`)
           if (testData.length > 0 && selectedTestDataIndex >= 0) {
-            const selectedTestDataValue = testData[selectedTestDataIndex]["value"]
+            const selectedTestDataValue = testData[selectedTestDataIndex]["value"] ? testData[selectedTestDataIndex]["value"] : ""
             console.log(`selectedTestData: ${JSON.stringify(selectedTestDataValue)}`)
             if (evaluationResponse && evaluationResponse["test_data_to_node_output"] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id]) {
               setOutputTextAreaContent(evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id])
