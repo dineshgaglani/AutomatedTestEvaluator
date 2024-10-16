@@ -1,6 +1,15 @@
 # Testing Graph Engine
+
+# Uncomment below for unit tests
+# from . import utils
+
+# Comment below for unit tests
 from test import utils
 
+# Uncomment below for unit tests
+# from ..engine import Node
+
+# Comment below for unit tests
 from engine import Node
 
 # 1. NoBranching - a -> b(true) -> c(true) for first data and a -> b(true) -> c(false) for second data test
@@ -370,3 +379,227 @@ def test_loopToAncestorSiblingNode():
     assert len(callRecorder['14'].edges) == 1
 
     assert max(callRecorder, key=int) == '14'
+
+
+# 7. Loop to child repeatedly - 
+#                                 a -> b   --true--> f
+#                                                    ^
+#                               true-> c   --true----| 
+#                              false-> d   --false---|
+#                              false-> e   --false---|
+def test_loopByContext():
+    #Context has number of iteration, ActivationEligibility views context has gt 0 iterations, ActivationFunction reduces context iterations
+    rootNode = Node("root") # a node
+    rootNode.setId(1)
+    rootNode.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    rootNode.assignActivationTask(utils.returnNodeName)
+
+    firstLevelChild = Node("firstLevelChild") # b node
+    firstLevelChild.setId(2)
+    firstLevelChild.setActivationEligibility(utils.contextBasedBooleanActivationFunction, "Read context for action")
+    firstLevelChild.assignActivationTask(utils.reduceContextIterationActivationFunction)
+
+    firstLevelSecondChild = Node("firstLevelSecondChild") # c node
+    firstLevelSecondChild.setId(3)
+    firstLevelSecondChild.setActivationEligibility(utils.contextBasedBooleanActivationFunction, "Read context for action")
+    firstLevelSecondChild.assignActivationTask(utils.reduceContextIterationActivationFunction)
+
+    firstLevelThirdChild = Node("firstLevelThirdChild") # d node
+    firstLevelThirdChild.setId(4)
+    firstLevelThirdChild.setActivationEligibility(utils.contextBasedBooleanActivationFunction, "Read context for action")
+    firstLevelThirdChild.assignActivationTask(utils.reduceContextIterationActivationFunction)
+
+    firstLevelFourthChild = Node("firstLevelFourthChild") # e node
+    firstLevelFourthChild.setId(5)
+    firstLevelFourthChild.setActivationEligibility(utils.contextBasedBooleanActivationFunction, "Read context for action")
+    firstLevelFourthChild.assignActivationTask(utils.reduceContextIterationActivationFunction)
+
+    secondLevelFirstChild = Node("secondLevelFirstChild") # f node
+    secondLevelFirstChild.setId(6)
+    secondLevelFirstChild.setActivationEligibility(utils.alwaysTrueActivationFunction, "Always true")
+    secondLevelFirstChild.assignActivationTask(utils.reduceContextIterationActivationFunction)
+
+    rootNode.addChild(firstLevelChild)
+    rootNode.addChild(firstLevelSecondChild)
+    rootNode.addChild(firstLevelThirdChild)
+    rootNode.addChild(firstLevelFourthChild)
+    firstLevelChild.addChild(secondLevelFirstChild)
+    firstLevelSecondChild.addChild(secondLevelFirstChild)
+    firstLevelThirdChild.addChild(secondLevelFirstChild)
+    firstLevelFourthChild.addChild(secondLevelFirstChild)
+
+    globalVisitedTestObj = utils.GlobalVisitedTestStub()
+
+    context = { "nodeName": "Testing", "iterations": 3 }
+
+    testData = [True] 
+    for singleTestData in testData:
+        rootNode.setPriorActionResults({})
+        rootNode.isActivationEligible(singleTestData, context)
+        rootNode.activate(context, globalVisitedTestObj)
+
+    callRecorder = globalVisitedTestObj.getCallRecorder()
+    assert callRecorder['1'].description == "root"
+    assert callRecorder['2'].description == "firstLevelChild"
+    assert "1 -> 2" in callRecorder['2'].edges
+    assert len(callRecorder['2'].edges) == 1
+    assert callRecorder['3'].description == "secondLevelFirstChild"
+    assert "2 -> 6" in callRecorder['3'].edges
+    assert len(callRecorder['3'].edges) == 2
+    assert callRecorder['4'].description == "firstLevelSecondChild"
+    assert "1 -> 3" in callRecorder['4'].edges
+    assert len(callRecorder['4'].edges) == 1
+    assert callRecorder['5'].description == "secondLevelFirstChild"
+    assert "3 -> 6" in callRecorder['5'].edges
+    assert len(callRecorder['5'].edges) == 2
+
+    assert max(callRecorder, key=int) == '5'
+
+
+# 8. Loop to child based on test data  
+#                                 a -> b   --true--> f
+#                                                    ^
+#                               true-> c   --true----| 
+#                              false-> d   --false---|
+#                              false-> e   --false---|
+def test_loopByTestData():
+    #TestData has number of iteration, ActivationEligibility views testdata has gt 0 iterations, ActivationFunction reduces testdata iterations
+    rootNode = Node("root") # a node
+    rootNode.setId(1)
+    rootNode.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    rootNode.assignActivationTask(utils.returnNodeName)
+
+    firstLevelChild = Node("firstLevelChild") # b node
+    firstLevelChild.setId(2)
+    firstLevelChild.setActivationEligibility(utils.testDataBasedBooleanActivationFunction, "Read testData for action")
+    firstLevelChild.assignActivationTask(utils.reduceTestDataIterationActivationFunction)
+
+    firstLevelSecondChild = Node("firstLevelSecondChild") # c node
+    firstLevelSecondChild.setId(3)
+    firstLevelSecondChild.setActivationEligibility(utils.testDataBasedBooleanActivationFunction, "Read testData for action")
+    firstLevelSecondChild.assignActivationTask(utils.reduceTestDataIterationActivationFunction)
+
+    firstLevelThirdChild = Node("firstLevelThirdChild") # d node
+    firstLevelThirdChild.setId(4)
+    firstLevelThirdChild.setActivationEligibility(utils.testDataBasedBooleanActivationFunction, "Read testData for action")
+    firstLevelThirdChild.assignActivationTask(utils.reduceTestDataIterationActivationFunction)
+
+    firstLevelFourthChild = Node("firstLevelFourthChild") # e node
+    firstLevelFourthChild.setId(5)
+    firstLevelFourthChild.setActivationEligibility(utils.testDataBasedBooleanActivationFunction, "Read testData for action")
+    firstLevelFourthChild.assignActivationTask(utils.reduceTestDataIterationActivationFunction)
+
+    secondLevelFirstChild = Node("secondLevelFirstChild") # f node
+    secondLevelFirstChild.setId(6)
+    secondLevelFirstChild.setActivationEligibility(utils.alwaysTrueActivationFunction, "Always true")
+    secondLevelFirstChild.assignActivationTask(utils.reduceTestDataIterationActivationFunction)
+
+    rootNode.addChild(firstLevelChild)
+    rootNode.addChild(firstLevelSecondChild)
+    rootNode.addChild(firstLevelThirdChild)
+    rootNode.addChild(firstLevelFourthChild)
+    firstLevelChild.addChild(secondLevelFirstChild)
+    firstLevelSecondChild.addChild(secondLevelFirstChild)
+    firstLevelThirdChild.addChild(secondLevelFirstChild)
+    firstLevelFourthChild.addChild(secondLevelFirstChild)
+
+    globalVisitedTestObj = utils.GlobalVisitedTestStub()
+
+    context = { "nodeName": "Testing" }
+
+    testData = [{ "iterations": 3 }] 
+    for singleTestData in testData:
+        rootNode.setPriorActionResults({})
+        rootNode.isActivationEligible(singleTestData, context)
+        rootNode.activate(context, globalVisitedTestObj)
+
+    callRecorder = globalVisitedTestObj.getCallRecorder()
+    assert callRecorder['1'].description == "root"
+    assert callRecorder['2'].description == "firstLevelChild"
+    assert "1 -> 2" in callRecorder['2'].edges
+    assert len(callRecorder['2'].edges) == 1
+    assert callRecorder['3'].description == "secondLevelFirstChild"
+    assert "2 -> 6" in callRecorder['3'].edges
+    assert len(callRecorder['3'].edges) == 2
+    assert callRecorder['4'].description == "firstLevelSecondChild"
+    assert "1 -> 3" in callRecorder['4'].edges
+    assert len(callRecorder['4'].edges) == 1
+    assert callRecorder['5'].description == "secondLevelFirstChild"
+    assert "3 -> 6" in callRecorder['5'].edges
+    assert len(callRecorder['5'].edges) == 2
+
+    assert max(callRecorder, key=int) == '5'
+
+# 9. Loop to child based on priorActionResult - 
+#                                 a -> b   --true--> f
+#                                                    ^
+#                               true-> c   --true----| 
+#                              false-> d   --false---|
+#                              false-> e   --false---|
+def test_loopByPriorAction():
+    #A node result has number of iteration, ActivationEligibility views priorResults has gt 0 iterations, ActivationFunction reduces priorResults iterations
+    rootNode = Node("root") # a node
+    rootNode.setId(1)
+    rootNode.setActivationEligibility(utils.alwaysTrueActivationFunction, "alwaysTrue")
+    rootNode.assignActivationTask(utils.returnIterationsActivationTask)
+
+    firstLevelChild = Node("firstLevelChild") # b node
+    firstLevelChild.setId(2)
+    firstLevelChild.setActivationEligibility(utils.priorActionResultsBooleanActivationFunction, "Read priorActionResults for action")
+    firstLevelChild.assignActivationTask(utils.reducePriorActionIterationsActivationTask)
+
+    firstLevelSecondChild = Node("firstLevelSecondChild") # c node
+    firstLevelSecondChild.setId(3)
+    firstLevelSecondChild.setActivationEligibility(utils.priorActionResultsBooleanActivationFunction, "Read priorActionResults for action")
+    firstLevelSecondChild.assignActivationTask(utils.reducePriorActionIterationsActivationTask)
+
+    firstLevelThirdChild = Node("firstLevelThirdChild") # d node
+    firstLevelThirdChild.setId(4)
+    firstLevelThirdChild.setActivationEligibility(utils.priorActionResultsBooleanActivationFunction, "Read priorActionResults for action")
+    firstLevelThirdChild.assignActivationTask(utils.reducePriorActionIterationsActivationTask)
+
+    firstLevelFourthChild = Node("firstLevelFourthChild") # e node
+    firstLevelFourthChild.setId(5)
+    firstLevelFourthChild.setActivationEligibility(utils.priorActionResultsBooleanActivationFunction, "Read priorActionResults for action")
+    firstLevelFourthChild.assignActivationTask(utils.reducePriorActionIterationsActivationTask)
+
+    secondLevelFirstChild = Node("secondLevelFirstChild") # f node
+    secondLevelFirstChild.setId(6)
+    secondLevelFirstChild.setActivationEligibility(utils.alwaysTrueActivationFunction, "Always true")
+    secondLevelFirstChild.assignActivationTask(utils.reducePriorActionIterationsActivationTask)
+
+    rootNode.addChild(firstLevelChild)
+    rootNode.addChild(firstLevelSecondChild)
+    rootNode.addChild(firstLevelThirdChild)
+    rootNode.addChild(firstLevelFourthChild)
+    firstLevelChild.addChild(secondLevelFirstChild)
+    firstLevelSecondChild.addChild(secondLevelFirstChild)
+    firstLevelThirdChild.addChild(secondLevelFirstChild)
+    firstLevelFourthChild.addChild(secondLevelFirstChild)
+
+    globalVisitedTestObj = utils.GlobalVisitedTestStub()
+
+    context = { "nodeName": "Testing" }
+
+    testData = [True] 
+    for singleTestData in testData:
+        rootNode.setPriorActionResults({})
+        rootNode.isActivationEligible(singleTestData, context)
+        rootNode.activate(context, globalVisitedTestObj)
+
+    callRecorder = globalVisitedTestObj.getCallRecorder()
+    assert callRecorder['1'].description == "root"
+    assert callRecorder['2'].description == "firstLevelChild"
+    assert "1 -> 2" in callRecorder['2'].edges
+    assert len(callRecorder['2'].edges) == 1
+    assert callRecorder['3'].description == "secondLevelFirstChild"
+    assert "2 -> 6" in callRecorder['3'].edges
+    assert len(callRecorder['3'].edges) == 2
+    assert callRecorder['4'].description == "firstLevelSecondChild"
+    assert "1 -> 3" in callRecorder['4'].edges
+    assert len(callRecorder['4'].edges) == 1
+    assert callRecorder['5'].description == "secondLevelFirstChild"
+    assert "3 -> 6" in callRecorder['5'].edges
+    assert len(callRecorder['5'].edges) == 2
+
+    assert max(callRecorder, key=int) == '5'

@@ -9,6 +9,10 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+# Uncomment below for unit tests
+# from .engine import Node
+
+# Comment below for unit tests
 from engine.engine import Node
 
 def parseNodes(json):
