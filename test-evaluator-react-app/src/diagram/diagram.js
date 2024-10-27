@@ -11,10 +11,6 @@ import '../App.css'
 import TextUpdaterNode from '../nodes/TextNode.js';
 import SavedDiagramsModal from '../components/savedDiagramsModal.js';
 import OutputDetail from '../components/outputDetail.js'
-import InputDetail from '../components/inputDetail';
-import HttpApiInputDetail from '../components/httpApiInputDetail';
-import SeleniumUInputDetail from '../components/seleniumUIInputDetailNode.js';
-import PythonInputDetail from '../components/pythonInputDetailNode.js';
 import InputDetailOptimized from '../components/inputDetailOptimized';
 
 
@@ -1081,37 +1077,9 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
   const [diagPaneHeight, setDiagPaneHeight] = useState(90)
 
   const [diagramsModalOpen, setDiagramsModalOpen] = useState(false)
-  const [inputAreaContent, setInputAreaContent] = useState({ "taskType": "HttpAPI", "taskProps": { "httpMethod": "GET" } })
   const [outputTextAreaContent, setOutputTextAreaContent] = useState("")
 
-  const [selectedStepType, setSelectedStepType] = useState(inputAreaContent["taskType"])
-
-  const stepTypeItems = { "HttpAPI": <HttpApiInputDetail taskProps={inputAreaContent['taskProps']} />, "SeleniumUI": <SeleniumUInputDetail taskProps={inputAreaContent['taskProps']} />, "PythonCode": <PythonInputDetail taskProps={inputAreaContent['taskProps']} /> }
-
-  const [selectedTaskComponent, setSelectedTaskComponent] = useState(stepTypeItems[inputAreaContent["taskType"]])
-
   const [evaluationResponse, setEvaluationResponse] = useState({})
-
-  function getInputAreaComponent(selectedStepType, taskPropsProvider = {}) {
-    console.log(`Get component invoked, selectedItem:  ${selectedStepType}`)
-    console.log(`inputAreaContent: ${JSON.stringify(taskPropsProvider)}`)
-
-    switch (selectedStepType) {
-      case "HttpAPI":
-        console.log(`Returning httpApi`)
-        return (<HttpApiInputDetail taskProps={taskPropsProvider["taskProps"]} />)
-
-      case "SeleniumUI":
-        console.log(`Returning SeleniumUI`)
-        return (<SeleniumUInputDetail taskProps={taskPropsProvider["taskProps"]} />)
-
-      default:
-        console.log(`Returning PythonInputDetail`)
-        return (<PythonInputDetail taskProps={taskPropsProvider["taskProps"]} />)
-
-    }
-  }
-
 
   useEffect(() => {
     if (socketOpen) {
@@ -1184,18 +1152,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
         // console.log(`Selected Node full: ${JSON.stringify(selectedNodeFullObject)}`)
         if (selectedNodeFullObject) {
           setCurrSelectedNode(selectedNodeFullObject)
-          // setInputTextAreaContent(`Id: ${selectedNodeFullObject.id}\nDescription: ${selectedNodeFullObject.data.label}\nactivationEligibilityDescription: ${selectedNodeFullObject.data.activationEligibility}\nactivationTask: ${selectedNodeFullObject.data.activationTask}`)
-
-          // if (selectedNodeFullObject.data.activationTask.hasOwnProperty("taskType")) {
-          //   setInputAreaContent(selectedNodeFullObject.data.activationTask)
-          //   setSelectedStepType(selectedNodeFullObject.data.activationTask["taskType"])
-          //   // setSelectedTaskComponent(stepTypeItems[selectedNodeFullObject.data.activationTask["taskType"]])
-          //   setSelectedTaskComponent(getInputAreaComponent(selectedNodeFullObject.data.activationTask["taskType"], selectedNodeFullObject.data.activationTask))
-          // } else {
-          //   setSelectedStepType("HttpAPI")
-          //   setSelectedTaskComponent(getInputAreaComponent("HttpAPI"))
-          // }
-
+      
           console.log(`testData.length > 0: ${testData.length > 0}, selectedTestDataIndex >= 0: ${selectedTestDataIndex >= 0}`)
           if (testData.length > 0 && selectedTestDataIndex >= 0) {
             const selectedTestDataValue = testData[selectedTestDataIndex]["value"] ? testData[selectedTestDataIndex]["value"] : ""
@@ -1243,21 +1200,6 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
     })
   }
 
-  function setNodeActivationTaskFromInput(newInputAreaContent) {
-    setNodes((prevNodes) => {
-      const newNodes = prevNodes.map(node => {
-        if (node.id == currSelectedNode['id']) {
-          console.log(`Node to update: ${JSON.stringify(node)}, with new activationTask: ${JSON.stringify(newInputAreaContent)}`)
-          const changedActivationTaskData = { ...node.data, "activationTask": newInputAreaContent }
-          return { ...node, data: changedActivationTaskData }
-        }
-        return node
-      })
-
-      return newNodes
-    })
-  }
-
   const openDiagram = useCallback((diagramIndex) => {
     console.log(`Diagram: ${diagramIndex} clicked!`)
     const diagramKey = Object.keys(allDiagrams)[diagramIndex]
@@ -1287,10 +1229,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
           onConnect={onConnect}
           nodeTypes={nodeTypes} />
         <div id="outputArea" style={{ float: "bottom", border: "black" }}>
-          {/* <OutputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Input" textAreaValue={inputTextAreaContent}></OutputDetail> */}
-          {/* <InputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedStepType={selectedStepType} setSelectedStepType={setSelectedStepType} selectedTaskComponent={selectedTaskComponent} setSelectedTaskComponent={setSelectedTaskComponent} inputAreaContent={inputAreaContent} stepTypeItems={stepTypeItems} getComponentFunction={getInputAreaComponent} setNodeInput={setNodeActivationTaskFromInput}></InputDetail> */}
           {currSelectedNode ? (<InputDetailOptimized id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedNode={currSelectedNode}></InputDetailOptimized>) : (<div></div>) }
-          {/* TODO - input details component that has component type and component values passed into it from diagram since all of this depends on the node being rendered and not something on the input details component */} 
           <OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" textAreaValue={outputTextAreaContent}></OutputDetail>
         </div>
       </div>
