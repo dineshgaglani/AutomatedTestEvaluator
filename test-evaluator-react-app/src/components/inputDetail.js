@@ -4,8 +4,8 @@ import Dropdown from 'react-dropdown';
 import 'react-dropdown/style.css';
 
 import HttpApiInputDetail from './httpApiInputDetail';
-import PythonInputDetail from './pythonInputDetail';
-import SeleniumUInputDetail from './seleniumUIInputDetail';
+import PythonInputDetail from './pythonInputDetailNode';
+import SeleniumUInputDetail from './seleniumUIInputDetailNode';
 
 function InputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDifferential, textAreaHeight, selectedStepType, setSelectedStepType, selectedTaskComponent, setSelectedTaskComponent, inputAreaContent, stepTypeItems, getComponentFunction, setNodeInput }) {
 

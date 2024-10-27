@@ -41,8 +41,8 @@ function TextUpdaterNode({ data }) {
       <Handle type="target" position={Position.Top} />
 
       <div>
-        <label htmlFor="nodeDescription">Node Description:</label>
-        <input type="text" id="nodeDescription" name="nodeDescription" value={label} onChange={onChangeNodeDescription} className="nodrag" />
+        <label htmlFor={`nodeDescription-${data.nodeId}`}>Node Description:</label>
+        <input type="text" id={`nodeDescription-${data.nodeId}`} name={`nodeDescription-${data.nodeId}`} value={label} onChange={onChangeNodeDescription} className="nodrag" />
 
         <br />
 
@@ -51,11 +51,12 @@ function TextUpdaterNode({ data }) {
           <div id="activationEligibilitySection">
             <label htmlFor="activationEligibility">Activation Eligibility:</label>
             <textarea
-              id="activationEligibility"
+              id={`activationEligibility-${data.nodeId}`}
               name="activationEligibility"
               value={activationEligibility}
               onChange={onChangeActivationEligibility}
               className="nodrag"
+              data-testid={`activationEligibility-${data.nodeId}`}
             ></textarea>
           </div>
         ) : null}
@@ -71,15 +72,15 @@ function TextUpdaterNode({ data }) {
         ) : null} */}
 
         {showTextareas ? (
-          <div id="activationTaskSection">
+          <div id={`activationTaskSection-${data.nodeId}`}>
             <label htmlFor="activationTask">Activation Task:</label>
-            <textarea id="activationTask" name="activationTask" value={activationTask} disabled={true} className="nodrag"></textarea>
+            <textarea id={`activationTask-${data.nodeId}`} data-testid={`activationTask-${data.nodeId}`} name="activationTask" value={activationTask} disabled={true} className="nodrag"></textarea>
           </div>
         ) : null}
 
         <br />
 
-        <button style={{ float: 'right' }} onClick={() => setShowTextareas(!showTextareas)}>
+        <button id={`expandNode-${data.nodeId}`} data-testid={`expandNode-${data.nodeId}`} data role='button' name='expandNode' style={{ float: 'right' }} onClick={() => setShowTextareas(!showTextareas)}>
           {showTextareas ? true : false}
         </button>
       </div>

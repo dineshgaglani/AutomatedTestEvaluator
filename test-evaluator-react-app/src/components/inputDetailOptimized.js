@@ -4,36 +4,19 @@ import Dropdown from 'react-dropdown';
 import 'react-dropdown/style.css';
 
 import HttpApiInputDetail from "./httpApiInputDetail"
-import PythonInputDetail from "./pythonInputDetail"
-import SeleniumUInputDetail from "./seleniumUIInputDetail"
+import PythonInputDetail from "./pythonInputDetailNode"
+import SeleniumUInputDetail from "./seleniumUIInputDetailNode"
+import HttpApiInputDetailNode from "./httpApiInputDetailNode";
 
 function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, heightDifferential, textAreaHeight, selectedNode }) {
-    // console.log(`selectedNode in inputDetailOptimized: ${JSON.stringify(selectedNode)}`)
-    const taskProps = selectedNode && selectedNode['data'] && selectedNode['data']['activationTask'] ? selectedNode['data']['activationTask']['taskProps'] : {}
-
-    // Child component params
-    // const nodeHttpMethod = taskProps && taskProps['httpMethod'] ? taskProps['httpMethod'] : "GET"
-    // const nodeHttpAddress = taskProps && taskProps['httpAddress'] ? taskProps['httpAddress'] : ""
-
-    // const nodeHttpMethod = taskProps['httpMethod']
-    // const nodeHttpAddress = taskProps['httpAddress']
-
-    // console.log(`taskprops in InputDetailsOptimzied: ${JSON.stringify(taskProps)}, nodeHttpMethod: ${nodeHttpMethod}, nodeHttpAddress: ${nodeHttpAddress}`)
-
-    const [httpMethod, setHttpMethod] = useState(taskProps && taskProps['httpMethod'] ? taskProps['httpMethod'] : "GET")
-    const [httpAddress, setHttpAddress] = useState(taskProps && taskProps['httpAddress'] ? taskProps['httpAddress'] : "")
-
-    console.log(`httpMethod: ${httpMethod}, httpAddress: ${httpAddress} in inputDetailsOpitimized`)
-
-    const [pythonText, setPythonText] = useState(taskProps && taskProps['pythonText'] ? taskProps['pythonText'] : "")
-
-    const stepTypeItems = { "HttpAPI": <HttpApiInputDetail nodeHttpMethod={httpMethod} nodeHttpAddress={httpAddress} setHttpMethod={setHttpMethod} setHttpAddress={setHttpAddress} />, "SeleniumUI": <SeleniumUInputDetail taskProps={taskProps} />, "PythonCode": <PythonInputDetail nodePythonText={pythonText} setPythonText={setPythonText} /> }
+    console.log(`selectedNode in inputDetailOptimized: ${JSON.stringify(selectedNode)}`)
+    // const taskProps = selectedNode ? selectedNode.data.activationTask.taskProps : { httpMethod: "GET", httpAddress: "" }
 
     const [inputAreaOpen, setInputAreaOpen] = useState(false)
     const [inputAreaSymbol, setInputAreaSymbol] = useState(`${infoText} ^`)
 
-    const [selectedStepType, setSelectedStepType] = useState(selectedNode && selectedNode['data'] && selectedNode['data']['activationTask'] ? selectedNode['data']['activationTask']['taskType'] : "HttpAPI")
-    const [selectedStepTaskComponent, setSelectedStepTaskComponent] = useState(selectedNode && selectedNode['data'] && selectedNode['data']['activationTask'] ? stepTypeItems[selectedNode['data']['activationTask']['taskType']] : <HttpApiInputDetail taskProps={{}} />)
+    const [selectedStepType, setSelectedStepType] = useState(selectedNode ? selectedNode.data.activationTask.taskType : "HttpAPI")
+    const [selectedStepTaskComponent, setSelectedStepTaskComponent] = useState(selectedNode ? getComponentBySelection(selectedNode.data.activationTask.taskType) : <HttpApiInputDetailNode selectedNode={selectedNode}/>)
 
     function toggleInputArea() {
         const origInputAreaOpen = inputAreaOpen
@@ -46,50 +29,37 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
         setDiagPaneHeight(newDiagPaneHeight)
     }
 
-    function selectStepType(selection) {
-        setSelectedStepType(selection.value)
-        setSelectedStepTaskComponent(stepTypeItems[selection.value])
+    function getComponentBySelection(selection) {
+        console.log(`getComponentBySelection called for node: ${JSON.stringify(selectedNode)} and selection: ${JSON.stringify(selection)}`)
+        if(selection == "HttpAPI") {
+            if(selectedNode.data.activationTask.taskType != "HttpAPI") {
+                selectedNode.data.activationTask.taskProps = { httpMethod: "GET", httpAddress: "" }
+            }
+            selectedNode.data.activationTask.taskType = "HttpAPI"
+            return <HttpApiInputDetailNode selectedNode={selectedNode} />
+        } else if(selection == "SeleniumUI") {
+            if(selectedNode.data.activationTask.taskType != "SeleniumUI") {
+                selectedNode.data.activationTask.taskProps = { }
+            }
+            selectedNode.data.activationTask.taskType = "SeleniumUI"
+            return <SeleniumUInputDetail selectedNode={selectedNode} />
+        } else if(selection == "PythonCode") {
+            if(selectedNode.data.activationTask.taskType != "PythonCode") {
+                selectedNode.data.activationTask.taskProps = { pythonText: "" }
+            }
+            selectedNode.data.activationTask.taskType = "PythonCode"
+            return <PythonInputDetail selectedNode={selectedNode} />
+        }
     }
 
-    function saveNodeInput() {
-        let newTaskProps = {}
-        if (selectedStepType == "HttpAPI") {
-            newTaskProps = { "httpMethod": httpMethod, "httpAddress": httpAddress }
-        }
-
-        if(selectedStepType == "PythonCode") {
-            newTaskProps = { "pythonText": pythonText }
-        }
-
-        console.log(`taskProps to write: ${JSON.stringify(newTaskProps)}`)
-        selectedNode["data"]["activationTask"] = {
-            "taskType": selectedStepType,
-            "taskProps": newTaskProps
-        }
+    function selectStepType(selection) {
+        console.log(`SelectStepType called for node: ${JSON.stringify(selectedNode)}`)
+        setSelectedStepType(selection.value)
+        setSelectedStepTaskComponent(getComponentBySelection(selection.value))
     }
 
     useEffect(() => {
-        console.log(`Re-rendering inputDetailsOptimized component`)
-        const selectedNodeActivationTaskType = selectedNode && selectedNode['data'] && selectedNode['data']['activationTask'] ? selectedNode['data']['activationTask']['taskType'] : "HttpAPI"
-
-        if (selectedStepType == "HttpAPI") {
-            const nodeHttpMethod = taskProps && taskProps['httpMethod'] ? taskProps['httpMethod'] : "GET"
-            const nodeHttpAddress = taskProps && taskProps['httpAddress'] ? taskProps['httpAddress'] : ""
-            setHttpMethod(nodeHttpMethod)
-            setHttpAddress(nodeHttpAddress)
-        }
-
-        if (selectedStepType == "PythonCode") {
-            const nodePythonText = taskProps && taskProps['pythonText'] ? taskProps['pythonText'] : ""
-            setPythonText(nodePythonText)
-        }
-
-
-        selectStepType({ "value": selectedNodeActivationTaskType })
-        // if(selectedNode && selectedNode['data'] && selectedNode['data']['activationTask']['taskType']) {
-        //     setSelectedStepTaskComponent(stepTypeItems[selectedNode['data']['activationTask']['taskType']])
-        // }
-
+        selectStepType({ "value": selectedNode.data.activationTask.taskType })
     }, [selectedNode]);
 
     return (
@@ -99,8 +69,8 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
                 <button onClick={toggleInputArea} style={{ width: "90vh", border: "black", height: "18px", backgroundColor: "grey" }}>{inputAreaSymbol}</button>
                 <div>
                     <div style={{ display: 'flex' }}>
-                        {inputAreaOpen && <Dropdown style={{ float: "left" }} options={Object.keys(stepTypeItems)} onChange={selectStepType} value={selectedStepType} placeholder="Step Type" />}
-                        {inputAreaOpen && <button style={{ marginLeft: "20px" }} onClick={saveNodeInput}>Save</button>}
+                        {inputAreaOpen && <label style={{ display: 'flex' }}>selectStepType:<Dropdown style={{ float: "left" }} options={["HttpAPI", "SeleniumUI", "PythonCode"]} onChange={selectStepType} value={selectedStepType} placeholder="Step Type" /></label>}
+                        {/* {inputAreaOpen && <button style={{ marginLeft: "20px" }} onClick={saveNodeInput} id="saveInputDetails" data-testid="saveInputDetails">Save</button>} */}
                     </div>
                     {inputAreaOpen && selectedStepTaskComponent}
                 </div>
@@ -108,7 +78,6 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
         </>
     )
 
-    // return (<>{httpMethod}{httpAddress}</>)
 }
 
 export default InputDetailOptimized

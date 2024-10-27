@@ -3,7 +3,7 @@ import ReactFlow, { addEdge, applyEdgeChanges, applyNodeChanges, createSelection
 import { useCallback, useState, useMemo } from 'react';
 import { ChatAPIcall } from '../api/chatGPT_API'
 
-import axios from 'axios';
+// import axios from 'axios';
 
 import 'reactflow/dist/style.css';
 import '../App.css'
@@ -13,8 +13,8 @@ import SavedDiagramsModal from '../components/savedDiagramsModal.js';
 import OutputDetail from '../components/outputDetail.js'
 import InputDetail from '../components/inputDetail';
 import HttpApiInputDetail from '../components/httpApiInputDetail';
-import SeleniumUInputDetail from '../components/seleniumUIInputDetail';
-import PythonInputDetail from '../components/pythonInputDetail';
+import SeleniumUInputDetail from '../components/seleniumUIInputDetailNode.js';
+import PythonInputDetail from '../components/pythonInputDetailNode.js';
 import InputDetailOptimized from '../components/inputDetailOptimized';
 
 
@@ -1074,7 +1074,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
 
   const initPosition = { 'x': 100, 'y': 150 }
   const [nodes, setNodes] = useState([]);
-  const [currSelectedNode, setCurrSelectedNode] = useState({})
+  const [currSelectedNode, setCurrSelectedNode] = useState(null)
   const [edges, setEdges] = useState([]);
   const [nodePosition, setPosition] = useState(initPosition)
 
@@ -1236,9 +1236,9 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
       return [...prevNodes, {
         id: `${prevNodes.length + 1}`,
         type: 'textUpdater',
-        data: { nodeId: prevNodes.length + 1 },
+        data: { nodeId: prevNodes.length + 1, activationTask: { taskType: "HttpAPI", taskProps: { httpMethod: "GET", httpAddress: "" } } },
         position: nodePosition,
-        style: { backgroundColor: '#ff0072', color: 'white' },
+        style: { backgroundColor: '#ff0072', color: 'white' }
       }]
     })
   }
@@ -1273,9 +1273,9 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
   return (
     <>
       <div style={{ float: "left" }}>
-        <button style={{ display: 'left', height: '60px' }} onClick={() => setDiagramsModalOpen(true)}>Open Demo Diagram</button>
+        <button style={{ display: 'left', height: '60px' }} onClick={() => setDiagramsModalOpen(true)} id='openDiagram' data-testid='openDiagram'>Open Demo Diagram</button>
         {diagramsModalOpen && <SavedDiagramsModal generateWithApi={generateWithChatGpt} renderDiagram={openDiagram} diagramsList={Object.keys(allDiagrams)} modalOpen={setDiagramsModalOpen} />}
-        <button style={{ display: 'bottom', height: '70px', marginTop: '10px', marginRight: '5px' }} onClick={addNodeClicked}>Add Node</button>
+        <button style={{ display: 'bottom', height: '70px', marginTop: '10px', marginRight: '5px' }} onClick={addNodeClicked} id='createNode' data-testid='createNode'>Add Node</button>
       </div>
       {/* <button style={{ display: 'top', height: '300px' }} onClick={ChatAPIcall}>Display Chat</button> */}
       {socketOpen ? (<h4>Evaluate Diagram</h4>) : (<h4></h4>)}
@@ -1289,7 +1289,8 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
         <div id="outputArea" style={{ float: "bottom", border: "black" }}>
           {/* <OutputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Input" textAreaValue={inputTextAreaContent}></OutputDetail> */}
           {/* <InputDetail id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedStepType={selectedStepType} setSelectedStepType={setSelectedStepType} selectedTaskComponent={selectedTaskComponent} setSelectedTaskComponent={setSelectedTaskComponent} inputAreaContent={inputAreaContent} stepTypeItems={stepTypeItems} getComponentFunction={getInputAreaComponent} setNodeInput={setNodeActivationTaskFromInput}></InputDetail> */}
-          <InputDetailOptimized id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedNode={currSelectedNode}></InputDetailOptimized>
+          {currSelectedNode ? (<InputDetailOptimized id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedNode={currSelectedNode}></InputDetailOptimized>) : (<div></div>) }
+          {/* TODO - input details component that has component type and component values passed into it from diagram since all of this depends on the node being rendered and not something on the input details component */} 
           <OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" textAreaValue={outputTextAreaContent}></OutputDetail>
         </div>
       </div>
