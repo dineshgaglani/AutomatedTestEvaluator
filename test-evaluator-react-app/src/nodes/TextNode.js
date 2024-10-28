@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Handle, Position, useOnSelectionChange } from 'reactflow';
 
 const handleStyle = { left: 10 };
@@ -13,9 +13,6 @@ function TextUpdaterNode({ data }) {
   const initialActivationEligibility = data.activationEligibility ? data.activationEligibility : ""
   const [activationEligibility, setActivationEligibility] = useState(initialActivationEligibility)
 
-  const initialActivationTask = data.activationTask ? JSON.stringify(data.activationTask) : ""
-  const [activationTask, setActivationTask] = useState(initialActivationTask)
-
   const onChangeNodeDescription = useCallback((evt) => {
     const value = evt.target.value
     setLabel(value)
@@ -29,12 +26,6 @@ function TextUpdaterNode({ data }) {
     data["activationEligibility"] = value
     console.log(`Activation Eligibility change: ${data["activationEligibility"]}`)
   }, []);
-
-  // const onChangeActivationTask = useCallback((evt) => {
-  //   const value = evt.target.value
-  //   setActivationTask(value)
-  //   data["activationTask"] = value
-  // }, []);
 
   return (
     <>
@@ -74,7 +65,7 @@ function TextUpdaterNode({ data }) {
         {showTextareas ? (
           <div id={`activationTaskSection-${data.nodeId}`}>
             <label htmlFor="activationTask">Activation Task:</label>
-            <textarea id={`activationTask-${data.nodeId}`} data-testid={`activationTask-${data.nodeId}`} name="activationTask" value={activationTask} disabled={true} className="nodrag"></textarea>
+            <textarea id={`activationTask-${data.nodeId}`} data-testid={`activationTask-${data.nodeId}`} name="activationTask" value={JSON.stringify(data.activationTask)} disabled={true} className="nodrag"></textarea>
           </div>
         ) : null}
 
