@@ -14,8 +14,27 @@ import OutputDetail from '../components/outputDetail.js'
 import InputDetailOptimized from '../components/inputDetailOptimized';
 
 
+function convertToNodeIdToTestDataResult(testDataToNodeId) {
+  // Convert FROM {testData1: {node1: 'testData1Node1Result', node2: 'testData1Node2Result'}, testData2: {node1: 'testData2Node1Result', node2: 'testData2Node2Result'}} to 
+  // TO  { node1: {testData1: 'testData1Node1Result', testData2: 'testData2Node1Result'}, node2: {testData1: 'testData1Node2Result', testData2: 'testData2Node2Result'} }
+  const result = Object.entries(testDataToNodeId).reduce((acc, [testDataKey, nodes]) => {
+    Object.entries(nodes).forEach(([nodeKey, resultValue]) => {
+      // Initialize the node key in the accumulator if it doesn't exist
+      if (!acc[nodeKey]) {
+        acc[nodeKey] = {};
+      }
+      // Assign the value to the correct position in the transformed object
+      acc[nodeKey][testDataKey] = resultValue;
+    });
+    return acc;
+  }, {});
+
+  return result
+}
+
 function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
 
+  console.log(`TestData on diagram render: ${JSON.stringify(testData)}`)
   const allDiagrams = {
     "FakerApiProducts": {
       "nodes": [
@@ -1079,7 +1098,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
   const [diagramsModalOpen, setDiagramsModalOpen] = useState(false)
   const [outputTextAreaContent, setOutputTextAreaContent] = useState("")
 
-  const [evaluationResponse, setEvaluationResponse] = useState({})
+  // const [evaluationResponse, setEvaluationResponse] = useState({})
 
   useEffect(() => {
     if (socketOpen) {
@@ -1097,7 +1116,9 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
       //   });
 
       // Ws Example
-      const ws = new WebSocket('wss://0ig7g8kowd.execute-api.us-east-1.amazonaws.com/test/');
+      const ws = new WebSocket('wss://0ig7g8kowd.execute-api.us-east-1.amazonaws.com/test/'); // For dev
+      // const ws = new WebSocket('ws://localhost:1234'); // For testing
+      console.log(`ws Object: ${JSON.stringify(ws)}`)
 
       const request = { action: 'evaluateDiagram', nodes: nodes, edges: edges, testData: `[${testData.map(td => td.value)}]`, envData: `${JSON.stringify(envData)}` }
       console.log(`request: ${JSON.stringify(request)}`)
@@ -1111,13 +1132,17 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
         // console.log(`event: ${event} in Diagram`)
         const eventDataResponse = JSON.parse(event.data)
         const eventData = eventDataResponse.data[0]
-        console.log(`Setting evaluation response to: ${JSON.stringify(eventData)}`)
-        setEvaluationResponse(eventData)
+        console.log(`Evaluation response: ${JSON.stringify(eventData)}`)
+        
+        const nodeOutputToTestData = convertToNodeIdToTestDataResult(eventData['test_data_to_node_output'])
+
+        // setEvaluationResponse(eventData)
         setNodes((prevNodes) => {
           const newNodes = prevNodes.map(node => {
             if (eventData['nodes_visited'].includes(node.id)) {
-              console.log(`Node to update: ${JSON.stringify(node)}`)
               const changedStyle = { ...node.style, 'backgroundColor': '#3bb143' }
+              node.data.output = nodeOutputToTestData[node.id] //Get all testdata outputs for this nodeId
+              console.log(`updated node: ${JSON.stringify(node)}`)
               return { ...node, 'style': changedStyle }
             }
             return node
@@ -1152,22 +1177,22 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
         // console.log(`Selected Node full: ${JSON.stringify(selectedNodeFullObject)}`)
         if (selectedNodeFullObject) {
           setCurrSelectedNode(selectedNodeFullObject)
-      
-          console.log(`testData.length > 0: ${testData.length > 0}, selectedTestDataIndex >= 0: ${selectedTestDataIndex >= 0}`)
-          if (testData.length > 0 && selectedTestDataIndex >= 0) {
-            const selectedTestDataValue = testData[selectedTestDataIndex]["value"] ? testData[selectedTestDataIndex]["value"] : ""
-            console.log(`selectedTestData: ${JSON.stringify(selectedTestDataValue)}`)
-            if (evaluationResponse && evaluationResponse["test_data_to_node_output"] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id]) {
-              setOutputTextAreaContent(evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id])
-            } else {
-              setOutputTextAreaContent("")
-            }
-          }
+          // console.log(`All testData in onNodesChange: ${JSON.stringify(testData)}`)
+          // console.log(`testData.length > 0: ${testData.length > 0}, selectedTestDataIndex >= 0: ${selectedTestDataIndex >= 0}`)
+          // if (testData.length > 0 && selectedTestDataIndex >= 0) {
+          //   const selectedTestDataValue = testData[selectedTestDataIndex]["value"] ? testData[selectedTestDataIndex]["value"] : ""
+          //   console.log(`selectedTestData: ${JSON.stringify(selectedTestDataValue)}`)
+          //   if (evaluationResponse && evaluationResponse["test_data_to_node_output"] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id]) {
+          //     setOutputTextAreaContent(evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id])
+          //   } else {
+          //     setOutputTextAreaContent("")
+          //   }
+          // }
         }
       }
       return applyNodeChanges(changes, nds)
     }),
-    [setNodes, selectedTestDataIndex]
+    [setNodes]
   );
 
   const onEdgesChange = useCallback(
@@ -1230,7 +1255,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
           nodeTypes={nodeTypes} />
         <div id="outputArea" style={{ float: "bottom", border: "black" }}>
           {currSelectedNode ? (<InputDetailOptimized id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedNode={currSelectedNode}></InputDetailOptimized>) : (<div></div>) }
-          <OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" textAreaValue={outputTextAreaContent}></OutputDetail>
+          {(currSelectedNode && selectedTestDataIndex >= 0) ? (<OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" selectedNode={currSelectedNode} selectedTestData={testData[selectedTestDataIndex].value}></OutputDetail>) : <div></div> }
         </div>
       </div>
     </>

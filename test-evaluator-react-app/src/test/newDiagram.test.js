@@ -1,7 +1,8 @@
-import React, { act } from 'react';
+import React from 'react';
 import { render, screen, fireEvent, within, waitFor } from "@testing-library/react";
 import userEvent from '@testing-library/user-event';
 import Diagram from "../diagram/diagram";
+import { mockReactFlow } from './initializer';
 /* 
     Biggest test:
     Validate no nodes are present on blank canvas
@@ -10,59 +11,6 @@ import Diagram from "../diagram/diagram";
     Select the first node, validate the NodeTask is updated appropriately
     Select the second node, validate the NodeTask is updated appropriately
 */
-
-class ResizeObserver {
-    constructor(callback) {
-        this.callback = callback;
-    }
-
-    observe(target) {
-        this.callback([{ target }], this);
-    }
-
-    unobserve() { }
-
-    disconnect() { }
-}
-
-class DOMMatrixReadOnly {
-    constructor(transform) {
-        const scale = transform?.match(/scale\(([1-9.])\)/)?.[1];
-        this.m22 = scale !== undefined ? +scale : 1;
-    }
-}
-
-// Only run the shim once when requested
-let init = false;
-
-export const mockReactFlow = () => {
-    if (init) return;
-    init = true;
-
-    global.ResizeObserver = ResizeObserver;
-
-    global.DOMMatrixReadOnly = DOMMatrixReadOnly;
-
-    Object.defineProperties(global.HTMLElement.prototype, {
-        offsetHeight: {
-            get() {
-                return parseFloat(this.style.height) || 1;
-            },
-        },
-        offsetWidth: {
-            get() {
-                return parseFloat(this.style.width) || 1;
-            },
-        },
-    });
-
-    global.SVGElement.prototype.getBBox = () => ({
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-    });
-};
 
 
 describe("New Diagram - Create nodes", () => {
@@ -171,6 +119,8 @@ describe("New Diagram - Create nodes", () => {
         const node2 = screen.getByTestId("rf__node-2")
         expect(node2).toBeInTheDocument();
         const expandNodeBtnNode2 = within(node2).getByTestId("expandNode-2")
+
+        screen.debug()
 
         const inputAreaBtnAfterNodesAdded = screen.queryByText("Node Task ^")
         expect(inputAreaBtnAfterNodesAdded).toBeNull()

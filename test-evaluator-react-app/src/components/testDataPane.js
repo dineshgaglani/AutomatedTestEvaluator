@@ -1,48 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-function TestDataPane({ socketOpen, setTestData, setSelectedTestDataIndex }) {
+function TestDataPane({ setTestData, setSelectedTestDataIndex }) {
     const [currentItem, setCurrentItem] = useState('');
     const [currentTestDataId, setCurrentTestDataId] = useState(1)
     const [list, setList] = useState([{ 'id': currentTestDataId, 'value': '', 'output': '' }]);
     const [showCursor, setShowCursor] = useState(false);
     const [cursorIndex, setCursorIndex] = useState(0);
     const [isItemSelected, setItemSelected] = useState(false)
-    const [selectedItemIndex, setSelectedItemIndex] = useState(0)
-
-    // const ws = useRef(null);
-
-    useEffect(() => {
-        if (socketOpen) {
-            console.log('Socket open on TestDataPane')
-            // const ws = new WebSocket('wss://socketsbay.com/wss/v2/1/demo/');
-
-            // ws.onopen = () => {
-            //     console.log('WebSocket connection established in TestDataPane.');
-
-            //     //No Toggle
-            //     // setSocketOpen(true)
-            // };
-
-            // ws.onmessage = (event) => {
-            //     console.log(`event: ${JSON.stringify(event)} in TestDataPane`)
-            //     // const updatedList = [...list];
-            //     // updatedList[index].output = event.target.value;
-            //     // setList(updatedList);
-            // };
-
-            // setList((prevTestDataList) => {
-            //     console.log(`prevTestDataList : ${JSON.stringify(prevTestDataList)}`)
-            //     const newTestDataList = prevTestDataList.map(prevTestDataItem => {
-            //         if([1, 3].includes(prevTestDataItem.id)) {
-            //             return { ...prevTestDataItem, 'output': prevTestDataItem.id }
-            //         } 
-            //         return prevTestDataItem
-            //     })
-
-            //     return newTestDataList
-            // })
-        }
-    }, [socketOpen])
+    const [selectedItemIndex, setSelectedItemIndex] = useState(-1)
 
     const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
@@ -58,6 +23,7 @@ function TestDataPane({ socketOpen, setTestData, setSelectedTestDataIndex }) {
             setCursorIndex(list.length);
 
             //This sets the test data on the diagram component
+            console.log(`Setting test data: ${JSON.stringify(list)}`)
             setTestData(list)
         }
     };
@@ -90,6 +56,7 @@ function TestDataPane({ socketOpen, setTestData, setSelectedTestDataIndex }) {
                 {list.map((item, index) => (
                     <li style={isItemSelected && selectedItemIndex === index ? { backgroundColor: "skyblue" } : { backgroundColor: "white" }}
                         key={item.id}
+                        data-testid={`testData_${item.id}`}
                         onClick={() => selectItem(index)}
                     >
                         <button style={{backgroundColor: "grey", float: "right"}} onClick={() => handleEditClick(index)}>*</button>
@@ -103,9 +70,9 @@ function TestDataPane({ socketOpen, setTestData, setSelectedTestDataIndex }) {
                                 autoFocus
                             />
                         ) : (
-                            <div id={'testData_' + index}>
+                            <div id={`testDataOutput_${item.id}`}>
                                 <label>{item.value}</label>
-                                {socketOpen && item.output ? (<h4>{item.output}</h4>) : (<h4></h4>)}
+                                {/* {socketOpen && item.output ? (<h4>{item.output}</h4>) : (<h4></h4>)} */}
                             </div>
                         )}
                     </li>

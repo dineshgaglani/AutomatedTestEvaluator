@@ -45,6 +45,7 @@
     "axios": "^1.7.7",
     "babel-jest": "^29.7.0",
     "install": "^0.13.0",
+    "mock-socket": "^9.3.1",
     "npm": "^10.9.0",
     "reactflow": "^11.9.4"
   }
