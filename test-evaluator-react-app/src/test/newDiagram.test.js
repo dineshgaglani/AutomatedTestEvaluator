@@ -120,8 +120,6 @@ describe("New Diagram - Create nodes", () => {
         expect(node2).toBeInTheDocument();
         const expandNodeBtnNode2 = within(node2).getByTestId("expandNode-2")
 
-        screen.debug()
-
         const inputAreaBtnAfterNodesAdded = screen.queryByText("Node Task ^")
         expect(inputAreaBtnAfterNodesAdded).toBeNull()
 
@@ -178,7 +176,7 @@ describe("New Diagram - Create nodes", () => {
         const pythonCodeTextPostNodeValueSet = screen.getByTestId("pythonText")
         expect(pythonCodeTextPostNodeValueSet.value).toEqual('testPythonCode')
 
-        screen.debug()
+        // screen.debug()
     })
 
 })
