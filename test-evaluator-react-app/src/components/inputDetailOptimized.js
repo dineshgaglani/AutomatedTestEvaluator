@@ -8,7 +8,6 @@ import SeleniumUInputDetail from "./seleniumUIInputDetailNode"
 import HttpApiInputDetailNode from "./httpApiInputDetailNode";
 
 function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, heightDifferential, textAreaHeight, selectedNode }) {
-    console.log(`selectedNode in inputDetailOptimized: ${JSON.stringify(selectedNode)}`)
     // const taskProps = selectedNode ? selectedNode.data.activationTask.taskProps : { httpMethod: "GET", httpAddress: "" }
 
     const [inputAreaOpen, setInputAreaOpen] = useState(false)
@@ -29,7 +28,6 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
     }
 
     function getComponentBySelection(selection) {
-        console.log(`getComponentBySelection called for node: ${JSON.stringify(selectedNode)} and selection: ${JSON.stringify(selection)}`)
         if(selection == "HttpAPI") {
             if(selectedNode.data.activationTask.taskType != "HttpAPI") {
                 selectedNode.data.activationTask.taskProps = { httpMethod: "GET", httpAddress: "" }
@@ -52,7 +50,6 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
     }
 
     function selectStepType(selection) {
-        console.log(`SelectStepType called for node: ${JSON.stringify(selectedNode)}`)
         setSelectedStepType(selection.value)
         setSelectedStepTaskComponent(getComponentBySelection(selection.value))
     }

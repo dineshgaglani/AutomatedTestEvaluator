@@ -32,9 +32,8 @@ function convertToNodeIdToTestDataResult(testDataToNodeId) {
   return result
 }
 
-function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
+function Diagram({ socketOpen, testData, envData, selectedTestDataIndex, isExpectationInProgress }) {
 
-  console.log(`TestData on diagram render: ${JSON.stringify(testData)}`)
   const allDiagrams = {
     "FakerApiProducts": {
       "nodes": [
@@ -44,7 +43,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
           "data": {
             "label": "Call Products endpoint",
             "activationEligibilityDescription": "Call Products endpoint",
-            "activationEligibility": "",
+            "activationEligibility": "return True",
             "activationTask": {
               "taskType": "HttpAPI",
               "taskProps": { "httpMethod": "GET", "httpAddress": "{context[\"baseUrl\"]}/products" }
@@ -74,7 +73,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
             "nodeId": 2,
             "label": "Call Products Id endpoint",
             "activationEligibilityDescription": "Call Products Id endpoint",
-            "activationEligibility": "",
+            "activationEligibility": "return True",
             "activationTask": {
               "taskType": "PythonCode",
               "taskProps": { "pythonText": "productsIdResp = requests.get(context[\"baseUrl\"] + \"/products/\" + str(currTestData)); return productsIdResp.json()" }
@@ -104,8 +103,11 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
             "nodeId": 3,
             "label": "Product 1 Called",
             "activationEligibilityDescription": "Product 1 Called",
-            "activationEligibility": "",
-            "activationTask": ""
+            "activationEligibility": "return priorActionResults['Call Products Id endpoint']['id'] == 1",
+            "activationTask": {
+              "taskType": "PythonCode",
+              "taskProps": { "pythonText": "print(\"Case 1 complete\"); return \"Case 1 complete!\"" }
+            }
           },
           "position": {
             "x": 63,
@@ -131,8 +133,11 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
             "nodeId": 4,
             "label": "Product 2 Called",
             "activationEligibilityDescription": "Product 2 Called",
-            "activationEligibility": "",
-            "activationTask": ""
+            "activationEligibility": "return priorActionResults['Call Products Id endpoint']['id'] == 2",
+            "activationTask": {
+              "taskType": "PythonCode",
+              "taskProps": { "pythonText": "print(\"Case 2 complete\"); return \"Case 2 complete!\"" }
+            }
           },
           "position": {
             "x": 356.33106378647517,
@@ -158,8 +163,11 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
             "nodeId": 5,
             "label": "Product 3 called",
             "activationEligibilityDescription": "Product 3 called",
-            "activationEligibility": "",
-            "activationTask": ""
+            "activationEligibility": "return priorActionResults['Call Products Id endpoint']['id'] == 3",
+            "activationTask": {
+              "taskType": "PythonCode",
+              "taskProps": { "pythonText": "print(\"Case 3 complete\"); return \"Case 3 complete!\"" }
+            }
           },
           "position": {
             "x": 640.478602643852,
@@ -1096,8 +1104,8 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
   const [diagPaneHeight, setDiagPaneHeight] = useState(90)
 
   const [diagramsModalOpen, setDiagramsModalOpen] = useState(false)
-  const [outputTextAreaContent, setOutputTextAreaContent] = useState("")
 
+  const [expectedTestDataToNodeMap, setExpectedTestDataToNodeMap] = useState({})
   // const [evaluationResponse, setEvaluationResponse] = useState({})
 
   useEffect(() => {
@@ -1129,11 +1137,11 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
       };
 
       ws.onmessage = (event) => {
-        // console.log(`event: ${event} in Diagram`)
+        console.log(`event: ${JSON.stringify(event)} in Diagram`)
         const eventDataResponse = JSON.parse(event.data)
         const eventData = eventDataResponse.data[0]
         console.log(`Evaluation response: ${JSON.stringify(eventData)}`)
-        
+
         const nodeOutputToTestData = convertToNodeIdToTestDataResult(eventData['test_data_to_node_output'])
 
         // setEvaluationResponse(eventData)
@@ -1169,6 +1177,65 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
     }
   }, [socketOpen])
 
+  useEffect(() => {
+    if (isExpectationInProgress && currSelectedNode) {
+      const selectedNodeFullObject = currSelectedNode
+      // console.log(`typeOf(selectedTestDataIndex): ${typeof(selectedTestDataIndex)}`)
+      // console.log(`Adding ${selectedNodeFullObject.id} to ${selectedTestDataIndex} expectation in ${JSON.stringify(expectedTestDataToNodeMap)}`)
+      setExpectedTestDataToNodeMap((prevExpectedTestDataToNodeMap) => {
+        // console.log(`Before adding to prevExpectedTestDataToNodeMap: ${JSON.stringify(prevExpectedTestDataToNodeMap)}`)
+        if (!prevExpectedTestDataToNodeMap.hasOwnProperty(selectedTestDataIndex)) {
+          // console.log(`${JSON.stringify(prevExpectedTestDataToNodeMap)} doesn't contain key for testdata: ${selectedTestDataIndex}, so adding`)
+          prevExpectedTestDataToNodeMap[selectedTestDataIndex] = []
+        }
+        // console.log(`After adding key ${selectedTestDataIndex} to ${JSON.stringify(prevExpectedTestDataToNodeMap)}`)
+        if (!prevExpectedTestDataToNodeMap[selectedTestDataIndex].includes(selectedNodeFullObject.id)) {
+          prevExpectedTestDataToNodeMap[selectedTestDataIndex] = prevExpectedTestDataToNodeMap[selectedTestDataIndex].concat(selectedNodeFullObject.id)
+        }
+        console.log(`After adding to prevExpectedTestDataToNodeMap: ${JSON.stringify(prevExpectedTestDataToNodeMap)}`)
+        return prevExpectedTestDataToNodeMap
+      })
+    }
+  }, [isExpectationInProgress, currSelectedNode])
+
+  // useEffect(() => {
+  //   console.log(`On useEffect for testDataToNodeMap coloring, testData[selectedTestDataIndex] for selectedTestDataIndex: ${selectedTestDataIndex} is ${JSON.stringify(expectedTestDataToNodeMap[selectedTestDataIndex])}`)
+  //   if (selectedTestDataIndex >= 0 && testData[selectedTestDataIndex] && expectedTestDataToNodeMap[selectedTestDataIndex]) {
+  //     setNodes((prevNodes) => {
+  //       const newNodes = prevNodes.map(node => {
+  //         if (expectedTestDataToNodeMap[selectedTestDataIndex].includes(node.id)) {
+  //           const changedStyleOnNodeForTestData = { ...node.style, 'backgroundColor': 'lightGreen' }
+  //           return { ...node, 'style': changedStyleOnNodeForTestData }
+  //         } else {
+  //           const changedStyleOnNodeForTestData = { ...node.style, 'backgroundColor': '#ff0072' }
+  //           return { ...node, 'style': changedStyleOnNodeForTestData }
+  //         }
+  //         return node
+  //       })
+
+  //       return newNodes
+  //     })
+  //   } else {
+  //     setNodes((prevNodes) => {
+  //       const newNodes = prevNodes.map(node => {
+  //         const changedStyleOnNodeForTestData = { ...node.style, 'backgroundColor': '#ff0072' }
+  //         return { ...node, 'style': changedStyleOnNodeForTestData }
+  //       })
+
+  //       return newNodes
+  //     })
+  //   }
+  // }, [selectedTestDataIndex])
+
+  function performNodeSelectionTasks(selectedNodeFullObject) {
+    setCurrSelectedNode(selectedNodeFullObject)
+
+    // When to use this?
+    // if (selectedTestDataIndex >= 0 && Object.keys(expectedTestDataToNodeMap).includes(selectedTestDataIndex) && expectedTestDataToNodeMap[selectedTestDataIndex].includes(selectedNodeFullObject.id)) {
+    //   selectedNodeFullObject.style.backgroundColor = "skyblue"
+    // }
+  }
+
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => {
       const selectedNode = changes.find(item => item.selected)
@@ -1176,18 +1243,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
         const selectedNodeFullObject = nds.find(node => node.id == selectedNode.id)
         // console.log(`Selected Node full: ${JSON.stringify(selectedNodeFullObject)}`)
         if (selectedNodeFullObject) {
-          setCurrSelectedNode(selectedNodeFullObject)
-          // console.log(`All testData in onNodesChange: ${JSON.stringify(testData)}`)
-          // console.log(`testData.length > 0: ${testData.length > 0}, selectedTestDataIndex >= 0: ${selectedTestDataIndex >= 0}`)
-          // if (testData.length > 0 && selectedTestDataIndex >= 0) {
-          //   const selectedTestDataValue = testData[selectedTestDataIndex]["value"] ? testData[selectedTestDataIndex]["value"] : ""
-          //   console.log(`selectedTestData: ${JSON.stringify(selectedTestDataValue)}`)
-          //   if (evaluationResponse && evaluationResponse["test_data_to_node_output"] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue] && evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id]) {
-          //     setOutputTextAreaContent(evaluationResponse["test_data_to_node_output"][selectedTestDataValue][selectedNodeFullObject.id])
-          //   } else {
-          //     setOutputTextAreaContent("")
-          //   }
-          // }
+          performNodeSelectionTasks(selectedNodeFullObject)
         }
       }
       return applyNodeChanges(changes, nds)
@@ -1254,8 +1310,8 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex }) {
           onConnect={onConnect}
           nodeTypes={nodeTypes} />
         <div id="outputArea" style={{ float: "bottom", border: "black" }}>
-          {currSelectedNode ? (<InputDetailOptimized id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedNode={currSelectedNode}></InputDetailOptimized>) : (<div></div>) }
-          {(currSelectedNode && selectedTestDataIndex >= 0) ? (<OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" selectedNode={currSelectedNode} selectedTestData={testData[selectedTestDataIndex].value}></OutputDetail>) : <div></div> }
+          {currSelectedNode ? (<InputDetailOptimized id="nodeText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={10} textAreaHeight={100} infoText="Node Task" selectedNode={currSelectedNode}></InputDetailOptimized>) : (<div></div>)}
+          {(currSelectedNode && selectedTestDataIndex >= 0 && testData[selectedTestDataIndex]) ? (<OutputDetail id="resultText" diagPaneHeight={diagPaneHeight} setDiagPaneHeight={setDiagPaneHeight} heightDifferential={30} textAreaHeight={300} infoText="Node Output" selectedNode={currSelectedNode} selectedTestData={testData[selectedTestDataIndex].value}></OutputDetail>) : <div></div>}
         </div>
       </div>
     </>

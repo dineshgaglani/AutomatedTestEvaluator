@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-function TestDataPane({ setTestData, setSelectedTestDataIndex }) {
+function TestDataPane({ setTestData, setSelectedTestDataIndex, setExpectationInProgress }) {
     const [currentItem, setCurrentItem] = useState('');
     const [currentTestDataId, setCurrentTestDataId] = useState(1)
     const [list, setList] = useState([{ 'id': currentTestDataId, 'value': '', 'output': '' }]);
@@ -8,6 +8,9 @@ function TestDataPane({ setTestData, setSelectedTestDataIndex }) {
     const [cursorIndex, setCursorIndex] = useState(0);
     const [isItemSelected, setItemSelected] = useState(false)
     const [selectedItemIndex, setSelectedItemIndex] = useState(-1)
+
+    const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+    const [isMenuVisible, setMenuVisible] = useState(false);
 
     const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
@@ -27,6 +30,27 @@ function TestDataPane({ setTestData, setSelectedTestDataIndex }) {
             setTestData(list)
         }
     };
+
+    // Handle right-click to open the menu
+    const handleContextMenu = (event, index) => {
+        event.preventDefault();
+        setMenuPosition({ x: event.pageX, y: event.pageY });
+        setMenuVisible(true);
+        selectItem(index)
+    };
+
+    // Hide the menu when clicking anywhere else
+    const handleClick = () => {
+        setMenuVisible(false);
+    };
+
+    // Set up event listeners
+    React.useEffect(() => {
+        document.addEventListener('click', handleClick);
+        return () => {
+            document.removeEventListener('click', handleClick);
+        };
+    }, []);
 
     const handleEditClick = (index) => {
         setShowCursor(true);
@@ -58,8 +82,9 @@ function TestDataPane({ setTestData, setSelectedTestDataIndex }) {
                         key={item.id}
                         data-testid={`testData_${item.id}`}
                         onClick={() => selectItem(index)}
+                        onContextMenu={(event) => handleContextMenu(event, index)}
                     >
-                        <button style={{backgroundColor: "grey", float: "right"}} onClick={() => handleEditClick(index)}>*</button>
+                        <button style={{ backgroundColor: "grey", float: "right" }} onClick={() => handleEditClick(index)}>*</button>
                         {showCursor && cursorIndex === index ? (
                             <input
                                 type="text"
@@ -102,6 +127,22 @@ function TestDataPane({ setTestData, setSelectedTestDataIndex }) {
                 ))} */}
             </ul>
 
+            {isMenuVisible && (
+                <ul
+                    style={{
+                        position: 'absolute',
+                        top: `${menuPosition.y}px`,
+                        left: `${menuPosition.x}px`,
+                        background: 'white',
+                        border: '1px solid #ddd',
+                        padding: '10px',
+                        listStyle: 'none',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+                    }}
+                >
+                    <li style={{ padding: '5px 10px', cursor: 'pointer' }} onClick={() => setExpectationInProgress(true)}>Set Expectation for testdata</li>
+                </ul>
+            )}
         </div>
     );
 }

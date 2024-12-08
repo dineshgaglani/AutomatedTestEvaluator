@@ -5,7 +5,6 @@ import 'react-dropdown/style.css';
 
 function HttpApiInputDetailNode ({ selectedNode }) {
 
-    console.log(`In httpApiInputDetailNode, selectedNode: ${JSON.stringify(selectedNode)}`)
     const [postSelected, setPostSelected] = useState(false)
     const [componentHttpMethod, setComponentHttpMethod] = useState(selectedNode.data.activationTask.taskProps.httpMethod)
     const [componentHttpAddress, setComponentHttpAddress] = useState(selectedNode.data.activationTask.taskProps.httpAddress)
