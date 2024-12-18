@@ -179,4 +179,85 @@ describe("New Diagram - Create nodes", () => {
         // screen.debug()
     })
 
+    test('Multiple Selenium Steps can be added and are persisted when navigating away from the node and re-entering the node', async () => {
+        render(<Diagram socketOpen={false} testData={[]} envData={[]} selectedTestDataIndex={-1}/>)
+
+        const inputAreaBtn = screen.queryByText("Node Task ^")
+        expect(inputAreaBtn).toBeNull()
+
+        const createNodeBtn = screen.getByTestId("createNode")
+        fireEvent.click(createNodeBtn);
+        const node1 = screen.getByTestId("rf__node-1")
+        expect(node1).toBeInTheDocument();
+        const expandNodeBtnNode1 = within(node1).getByTestId("expandNode-1")
+
+        fireEvent.click(createNodeBtn);
+        const node2 = screen.getByTestId("rf__node-2")
+        expect(node2).toBeInTheDocument();
+        const expandNodeBtnNode2 = within(node2).getByTestId("expandNode-2")
+
+        const nodeDescriptionTextboxNode2 = within(node2).getByLabelText("Node Description:")
+        fireEvent.change(nodeDescriptionTextboxNode2, { target: { value: 'New Text' } });
+
+        fireEvent.click(node2);
+        node2.focus()
+        await userEvent.keyboard('{Enter}');
+
+        const inputAreaBtnCollapsed = screen.getByText("Node Task ^")
+        fireEvent.click(inputAreaBtnCollapsed);
+        expect(screen.queryByText("Node Task ^")).toBeNull()
+        const inputAreaBtnExpanded = screen.getByText("Node Task >")
+
+        //Select "SeleniumUI" from the 'stepTypeSelector' combobox and enter some values for locator, action and param 
+        const nodeInputTypeSelectorContainer = screen.getByText('selectStepType:');
+        const nodeInputTypeSelector = nodeInputTypeSelectorContainer.querySelector('.Dropdown-control');
+        await userEvent.click(nodeInputTypeSelector);
+        const seleniumUIOption = screen.getByText('SeleniumUI');
+        await userEvent.click(seleniumUIOption)
+        
+        const locator1TextBox = screen.getByTestId("locatorInput0")
+        expect(locator1TextBox.value).toEqual("")
+        fireEvent.change(locator1TextBox, { target: { value: 'testLocator0' } });
+        const action1TextBox = screen.getByTestId("actionInput0")
+        expect(action1TextBox.value).toEqual("")
+        fireEvent.change(action1TextBox, { target: { value: 'testAction0' } });
+        const param1TextBox = screen.getByTestId("paramInput0")
+        expect(param1TextBox.value).toEqual("")
+        fireEvent.change(param1TextBox, { target: { value: 'testParam0' } });
+
+        const addStepBtn = screen.getByTestId("addSeleniumStepBtn")
+        fireEvent.click(addStepBtn)
+
+        const locator2TextBox = screen.getByTestId("locatorInput1")
+        expect(locator2TextBox.value).toEqual("")
+        fireEvent.change(locator2TextBox, { target: { value: 'testLocator1' } });
+        const action2TextBox = screen.getByTestId("actionInput1")
+        expect(action2TextBox.value).toEqual("")
+        fireEvent.change(action2TextBox, { target: { value: 'testAction1' } });
+        const param2TextBox = screen.getByTestId("paramInput1")
+        expect(param2TextBox.value).toEqual("")
+        fireEvent.change(param2TextBox, { target: { value: 'testParam1' } });
+
+        //Click on node1 and validate that inputDetailsOptimized is called with param SelectedNode as node1 and that the HttpAddress input is cleared
+        fireEvent.click(node1)
+        node1.focus()
+        await userEvent.keyboard('{Enter}');
+        expect(node1).toHaveClass('selected')
+        const httpAddressTextBoxNode1Selected = screen.getByTestId("httpAddress")
+        expect(httpAddressTextBoxNode1Selected.value).toEqual("")
+
+        fireEvent.click(node2)
+        node2.focus()
+        await userEvent.keyboard('{Enter}');
+        expect(node2).toHaveClass('selected')
+
+        expect(locator1TextBox.value).toEqual("testLocator0")
+        expect(action1TextBox.value).toEqual("testAction0")
+        expect(param1TextBox.value).toEqual("testParam0")
+
+        expect(locator2TextBox.value).toEqual("testLocator1")
+        expect(action2TextBox.value).toEqual("testAction1")
+        expect(param2TextBox.value).toEqual("testParam1")
+    })
+
 })

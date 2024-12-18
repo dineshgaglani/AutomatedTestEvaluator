@@ -1092,7 +1092,56 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex, isExpec
           "id": "reactflow__edge-1a-2"
         }
       ]
-    }
+    },
+    "UIWithSeleniumSteps": {
+      "nodes":[
+         {
+            "id":"1",
+            "type":"textUpdater",
+            "data":{
+               "nodeId":1,
+               "activationTask":{
+                  "taskType":"SeleniumUI",
+                  "taskProps":[
+                     {
+                        "locator":"",
+                        "action":"navigate",
+                        "param":"https://practicetestautomation.com/practice-test-login/"
+                     },
+                     {
+                        "locator":"input[name=\\\"username\\\"]",
+                        "action":"send_keys",
+                        "param":"student"
+                     },
+                     {
+                        "locator":"input[name=\\\"password\\\"]",
+                        "action":"send_keys",
+                        "param":"Password123"
+                     }
+                  ]
+               },
+               "label":"Navigate to test site",
+               "activationEligibilityDescription":"",
+               "activationEligibility":"return True"
+            },
+            "position":{
+               "x":100,
+               "y":150
+            },
+            "style":{
+               "backgroundColor":"#ff0072",
+               "color":"white"
+            },
+            "width":309,
+            "height":152,
+            "selected":true,
+            "dragging":false
+         }
+      ],
+      "edges":[
+         
+      ]
+   }
   }
 
   const initPosition = { 'x': 100, 'y': 150 }

@@ -3,6 +3,7 @@ from .. import nodeParser
 
 # Comment out 'from engine.engine import Node' from nodeParser to exec this
 # Execute using command - /Library/Developer/CommandLineTools/usr/bin/python3 -m pytest test_task_translation.py 
+# Execute using command - C:\Users\<username>\AppData\Local\Microsoft\WindowsApps\python3.12.exe -m pytest -s test_task_translation.py on windows
 
 def test_httpGetCall():
     httpGetTask = {
@@ -96,3 +97,15 @@ def test_httpGetCallWithContextAndTestDataVars():
     getCallResult = globals_dict['getCallResult']
     assert getCallResult['id'] == 1
     assert getCallResult['title'] == "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops"
+
+def test_seleniumMultiSteps():
+    seleniumTask = {
+        "taskType": "SeleniumUI",
+        "taskProps":  
+        [{ "locator": "", "action": "navigate", "param": "http://google.com" }, 
+        { "locator": "div[name=\"selected\"]", "action": "click", "param": "" }, 
+        { "locator": "input[name=\"active\"]", "action": "send_keys", "param": "abc" }]
+    }
+    
+    seleniumCodeForSeleniumTask = nodeParser.translateTaskObjToTaskFn(seleniumTask)
+    print(seleniumCodeForSeleniumTask)

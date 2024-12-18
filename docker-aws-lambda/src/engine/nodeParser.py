@@ -52,6 +52,7 @@ def createTreeFromJson(nodesJson, edgesJson):
     return nodesIdMap[min(list(nodesIdMap.keys()))]
 
 def translateTaskObjToTaskFn(taskObj):
+    print('taskObj["taskType"] is ' + str(taskObj["taskType"]))
     if taskObj["taskType"] == "HttpAPI":
         return "return " + translateHttpTaskFn(taskObj["taskProps"])
     
@@ -72,4 +73,22 @@ def translatePythonTaskFn(pythonTaskProps):
     return pythonTaskProps["pythonText"]
 
 def translateSeleniumUITaskFn(seleniumUITaskProps):
-    return "pass"
+    # example seleniumTaskProps: 
+    # [{ "locator": "", "action": "navigate", "param": "http://google.com" }, 
+    # { "locator": "div.selected", "action": "click", "param": "" }, 
+    # { "locator": "input.active", "action": "setValue", "param": "abc" }]
+    print("SeleniumUI Task translation invoked")
+    filledFn = ""
+    for idx, seleniumTaskModel in enumerate(seleniumUITaskProps):
+        if seleniumTaskModel["action"] == "navigate" : 
+            filledFn += f'context["webUiDriver"].get(\"{seleniumTaskModel["param"]}\")'
+        elif seleniumTaskModel["action"] == "click":
+            filledFn += f'context["webUiDriver"].find_element(By.CSS_SELECTOR, \"{seleniumTaskModel["locator"]}\").click()'
+        elif seleniumTaskModel["action"] == "send_keys":
+            filledFn += f'context["webUiDriver"].find_element(By.CSS_SELECTOR, \"{seleniumTaskModel["locator"]}\").send_keys(\"{seleniumTaskModel["param"]}\")'
+        #screenshots saved in ./tmp on aws lambda
+        filledFn += f'; time.sleep(5); context["webUiDriver"].save_screenshot("./tmp/screenshot{idx}.png"); '
+    # Remove the last ';'
+    filledFn = filledFn[:-2]
+
+    return filledFn

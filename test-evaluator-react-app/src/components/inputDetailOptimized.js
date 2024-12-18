@@ -36,7 +36,7 @@ function InputDetailOptimized({ infoText, diagPaneHeight, setDiagPaneHeight, hei
             return <HttpApiInputDetailNode selectedNode={selectedNode} />
         } else if(selection == "SeleniumUI") {
             if(selectedNode.data.activationTask.taskType != "SeleniumUI") {
-                selectedNode.data.activationTask.taskProps = { }
+                selectedNode.data.activationTask.taskProps =  [{ locator: "", action: "", param: "" }] 
             }
             selectedNode.data.activationTask.taskType = "SeleniumUI"
             return <SeleniumUInputDetail selectedNode={selectedNode} />
