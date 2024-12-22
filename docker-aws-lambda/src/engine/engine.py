@@ -92,7 +92,7 @@ class Node:
         
         for child in self.children:
             child.setPriorActionResults(self.priorActionResults)
-            # TODO - Add check to if child is present in globalVisited.
+            # TODO - Add check to if child is present in globalVisited for the currently executing currTestData.
             # print(f'checking if child {child.description} is eligible for activation: child.isActivationEligible(self.currTestData, context): {str(child.isActivationEligible(self.currTestData, context))}, child not in visited: {str(child not in visited)}')
             if((child.isActivationEligible(self.currTestData, context)) & (child not in visited) & (child.description not in self.priorActionResults)):
                 child.addEdge(f'{self.id} -> {child.id}')

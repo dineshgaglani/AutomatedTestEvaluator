@@ -4,6 +4,8 @@ import os
 import sys
 import boto3
 import json
+import random
+import string
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By

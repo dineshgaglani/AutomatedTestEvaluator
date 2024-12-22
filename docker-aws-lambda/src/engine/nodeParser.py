@@ -1,6 +1,9 @@
 import os
 import time
 import requests
+import boto3
+import random
+import string
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -75,10 +78,14 @@ def translatePythonTaskFn(pythonTaskProps):
 def translateSeleniumUITaskFn(seleniumUITaskProps):
     # example seleniumTaskProps: 
     # [{ "locator": "", "action": "navigate", "param": "http://google.com" }, 
-    # { "locator": "div.selected", "action": "click", "param": "" }, 
-    # { "locator": "input.active", "action": "setValue", "param": "abc" }]
+    # { "locator": "div[name=\"selected\"]", "action": "click", "param": "" }, 
+    # { "locator": "input[name=\"active\"]", "action": "send_keys", "param": "abc" }]
     print("SeleniumUI Task translation invoked")
-    filledFn = ""
+    filledFn = "rand = ''.join(random.choices(string.ascii_letters, k=6)); "
+    # boto3 s3 connection
+    filledFn += "s3 = boto3.client('s3'); bucket_name = 'selenium-task-screenshots'; "
+    # screenshots array initialization
+    filledFn += "s3Locations = []; "
     for idx, seleniumTaskModel in enumerate(seleniumUITaskProps):
         if seleniumTaskModel["action"] == "navigate" : 
             filledFn += f'context["webUiDriver"].get(\"{seleniumTaskModel["param"]}\")'
@@ -86,9 +93,10 @@ def translateSeleniumUITaskFn(seleniumUITaskProps):
             filledFn += f'context["webUiDriver"].find_element(By.CSS_SELECTOR, \"{seleniumTaskModel["locator"]}\").click()'
         elif seleniumTaskModel["action"] == "send_keys":
             filledFn += f'context["webUiDriver"].find_element(By.CSS_SELECTOR, \"{seleniumTaskModel["locator"]}\").send_keys(\"{seleniumTaskModel["param"]}\")'
-        #screenshots saved in ./tmp on aws lambda
-        filledFn += f'; time.sleep(5); context["webUiDriver"].save_screenshot("./tmp/screenshot{idx}.png"); '
-    # Remove the last ';'
-    filledFn = filledFn[:-2]
+        filledFn += f'; time.sleep(5); '
+        # TODO - save screenshot to s3 per step per node per testdata
+        filledFn += f'screenshot_name = f\'screenshot{{rand}}_{idx}.png\'; screenshot_path = "/tmp/" + screenshot_name; context["webUiDriver"].save_screenshot(screenshot_path); s3.upload_file(screenshot_path, bucket_name, screenshot_name); url = s3.generate_presigned_url(ClientMethod=\'get_object\',Params={{\'Bucket\': bucket_name, \'Key\': screenshot_name}}, ExpiresIn=3600); s3Locations.append(url); '
+    # Return the screenshots s3 addresses
+    filledFn += f'return s3Locations'
 
     return filledFn
