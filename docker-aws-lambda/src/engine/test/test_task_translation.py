@@ -109,4 +109,18 @@ def test_seleniumMultiSteps():
     
     seleniumCodeForSeleniumTask = nodeParser.translateTaskObjToTaskFn(seleniumTask)
     print(seleniumCodeForSeleniumTask)
-    # assert(seleniumCodeForSeleniumTask) == 'context["webUiDriver"].get("http://google.com"); time.sleep(5); context["webUiDriver"].save_screenshot("/tmp/screenshot0.png"); print("saved scr in: /tmp/screenshot0.png"); context["webUiDriver"].find_element(By.CSS_SELECTOR, "div[name="selected"]").click(); time.sleep(5); context["webUiDriver"].save_screenshot("/tmp/screenshot1.png"); print("saved scr in: /tmp/screenshot1.png"); context["webUiDriver"].find_element(By.CSS_SELECTOR, "input[name="active"]").send_keys("abc"); time.sleep(5); context["webUiDriver"].save_screenshot("/tmp/screenshot2.png"); print("saved scr in: /tmp/screenshot2.png")'
+    print("\n\n\n")
+    
+
+def test_seleniumMultiStepsWithTestData():
+    seleniumTask = {
+        "taskType": "SeleniumUI",
+        "taskProps":  
+        [{ "locator": "", "action": "navigate", "param": "http://google.com" }, 
+        { "locator": '{currTestData[\"clickParam\"]}', "action": "click", "param": "" }, 
+        { "locator": "input[name=\"active\"]", "action": "send_keys", "param": '{currTestData[\"sendKeysParam\"]}' }]
+    }
+    
+    seleniumCodeForSeleniumTask = nodeParser.translateTaskObjToTaskFn(seleniumTask)
+    print(seleniumCodeForSeleniumTask)
+    print("\n\n\n")

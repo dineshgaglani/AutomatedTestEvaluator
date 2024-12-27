@@ -88,11 +88,11 @@ def translateSeleniumUITaskFn(seleniumUITaskProps):
     filledFn += "s3Locations = []; "
     for idx, seleniumTaskModel in enumerate(seleniumUITaskProps):
         if seleniumTaskModel["action"] == "navigate" : 
-            filledFn += f'context["webUiDriver"].get(\"{seleniumTaskModel["param"]}\")'
+            filledFn += f'context["webUiDriver"].get(f\'{seleniumTaskModel["param"]}\')'
         elif seleniumTaskModel["action"] == "click":
-            filledFn += f'context["webUiDriver"].find_element(By.CSS_SELECTOR, \"{seleniumTaskModel["locator"]}\").click()'
+            filledFn += f'context["webUiDriver"].find_element(By.CSS_SELECTOR, f\'{seleniumTaskModel["locator"]}\').click()'
         elif seleniumTaskModel["action"] == "send_keys":
-            filledFn += f'context["webUiDriver"].find_element(By.CSS_SELECTOR, \"{seleniumTaskModel["locator"]}\").send_keys(\"{seleniumTaskModel["param"]}\")'
+            filledFn += f'context["webUiDriver"].find_element(By.CSS_SELECTOR, f\'{seleniumTaskModel["locator"]}\').send_keys(f\'{seleniumTaskModel["param"]}\')'
         filledFn += f'; time.sleep(5); '
         # TODO - save screenshot to s3 per step per node per testdata
         filledFn += f'screenshot_name = f\'screenshot{{rand}}_{idx}.png\'; screenshot_path = "/tmp/" + screenshot_name; context["webUiDriver"].save_screenshot(screenshot_path); s3.upload_file(screenshot_path, bucket_name, screenshot_name); url = s3.generate_presigned_url(ClientMethod=\'get_object\',Params={{\'Bucket\': bucket_name, \'Key\': screenshot_name}}, ExpiresIn=3600); s3Locations.append(url); '

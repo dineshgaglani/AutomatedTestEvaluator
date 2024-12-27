@@ -20,8 +20,9 @@ function OutputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDiffe
     }
 
     useEffect(() => {
-        console.log(`UseEffect in outputDetails: selectedNode.data.output: ${JSON.stringify(selectedNode.data.output)}, selectedTestData: ${JSON.stringify(selectedTestData)}`)
+        console.log(`UseEffect in outputDetails: selectedNode.data.output: ${JSON.stringify(selectedNode.data.output)}, selectedTestData: ${selectedTestData}`)
         setTextAreaValue("")
+        selectedTestData = selectedTestData.replace(/"/g, "'"); // Because the result from the backend has single quotes
         if (selectedNode.data.output && selectedNode.data.output[selectedTestData]) {
             console.log(`setting textarea value to ${JSON.stringify(selectedNode.data.output[selectedTestData])}`)
             //TODO - create a new component for SeleniumUI instead of using if here
