@@ -97,6 +97,7 @@ def handler(event, context):
     # appContext = { 'baseUrl': 'https://fakestoreapi.com' }
     base64_data = event.get('pickedTree')
     testData = event.get('testData')
+    print(f'testData: {json.dumps(testData, indent=4)}')
 
     pickled_flow = base64.b64decode(base64_data)
     flow = dill.loads(pickled_flow)

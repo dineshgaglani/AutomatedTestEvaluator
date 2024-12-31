@@ -1,6 +1,6 @@
 # Install Browser, OS dependencies and Python modules
 # NOTE - On x86 windows add --provenance=false to docker build or error is thrown
-FROM public.ecr.aws/lambda/python:3.8 AS lambda-base
+FROM public.ecr.aws/lambda/python:3.12 AS lambda-base
 # FROM python:3.7-slim-buster as base
 
 COPY requirements.txt /tmp/

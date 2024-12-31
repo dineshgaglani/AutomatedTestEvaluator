@@ -1094,54 +1094,8 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex, isExpec
       ]
     },
     "UIWithSeleniumSteps": {
-      "nodes":[
-         {
-            "id":"1",
-            "type":"textUpdater",
-            "data":{
-               "nodeId":1,
-               "activationTask":{
-                  "taskType":"SeleniumUI",
-                  "taskProps":[
-                     {
-                        "locator":"",
-                        "action":"navigate",
-                        "param":"https://practicetestautomation.com/practice-test-login/"
-                     },
-                     {
-                        "locator":"input[name=\\\"username\\\"]",
-                        "action":"send_keys",
-                        "param":"student"
-                     },
-                     {
-                        "locator":"input[name=\\\"password\\\"]",
-                        "action":"send_keys",
-                        "param":"Password123"
-                     }
-                  ]
-               },
-               "label":"Navigate to test site",
-               "activationEligibilityDescription":"",
-               "activationEligibility":"return True"
-            },
-            "position":{
-               "x":100,
-               "y":150
-            },
-            "style":{
-               "backgroundColor":"#ff0072",
-               "color":"white"
-            },
-            "width":309,
-            "height":152,
-            "selected":true,
-            "dragging":false
-         }
-      ],
-      "edges":[
-         
-      ]
-   }
+      "nodes": [{ "id": "1", "type": "textUpdater", "data": { "nodeId": 1, "activationTask": { "taskType": "SeleniumUI", "taskProps": { "steps": [{ "locator": "", "action": "navigate", "param": "https://practicetestautomation.com/practice-test-login/" }, { "locator": "input[name=\\\"username\\\"]", "action": "send_keys", "param": "{currTestData[\"user\"]}" }, { "locator": "input[name=\\\"password\\\"]", "action": "send_keys", "param": "Password123" }, { "locator": "#submit", "action": "click", "param": "" }], "returns": [{ "name": "", "locator": "{currTestData[\"titleLocator\"]}" }] } }, "label": "Navigate to test site", "activationEligibilityDescription": "", "activationEligibility": "return True" }, "position": { "x": 204, "y": 30 }, "style": { "backgroundColor": "#ff0072", "color": "white" }, "width": 297, "height": 72, "selected": true, "dragging": false, "positionAbsolute": { "x": 204, "y": 30 } }], "edges": []
+    }
   }
 
   const initPosition = { 'x': 100, 'y': 150 }

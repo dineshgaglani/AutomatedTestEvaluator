@@ -98,29 +98,36 @@ def test_httpGetCallWithContextAndTestDataVars():
     assert getCallResult['id'] == 1
     assert getCallResult['title'] == "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops"
 
-def test_seleniumMultiSteps():
+def test_seleniumMultiStepsWithContextAndTestData():
     seleniumTask = {
         "taskType": "SeleniumUI",
-        "taskProps":  
-        [{ "locator": "", "action": "navigate", "param": "http://google.com" }, 
-        { "locator": "div[name=\"selected\"]", "action": "click", "param": "" }, 
-        { "locator": "input[name=\"active\"]", "action": "send_keys", "param": "abc" }]
+        "taskProps":  {
+            "steps": [{ "locator": "", "action": "navigate", "param": "{context[\"baseUrl\"]}" }, 
+                      { "locator": "{currTestData[\"clickParam\"]}", "action": "click", "param": "" }, 
+                      { "locator": "input[name=\"active\"]", "action": "send_keys", "param": '{currTestData[\"sendKeysParam\"]}' }],
+            "returns": [{"locator": "input[name=\"return\"]", "name": "val"},
+                        {"locator": '{currTestData[\"returnParam\"]}', "name": "valWithTestData"},
+                        {"locator": '{context[\"returnParam\"]}', "name": "valWithContext"}]
+        }
     }
-    
-    seleniumCodeForSeleniumTask = nodeParser.translateTaskObjToTaskFn(seleniumTask)
-    print(seleniumCodeForSeleniumTask)
-    print("\n\n\n")
-    
 
-def test_seleniumMultiStepsWithTestData():
-    seleniumTask = {
-        "taskType": "SeleniumUI",
-        "taskProps":  
-        [{ "locator": "", "action": "navigate", "param": "http://google.com" }, 
-        { "locator": '{currTestData[\"clickParam\"]}', "action": "click", "param": "" }, 
-        { "locator": "input[name=\"active\"]", "action": "send_keys", "param": '{currTestData[\"sendKeysParam\"]}' }]
-    }
-    
+    # Create context["webUiDriver"] with mocked
+        # from selenium import webdriver
+        # from selenium.webdriver.common.by import By
+        # from selenium.webdriver.common.keys import Keys
+        # from selenium.webdriver.chrome.options import Options
+        # from selenium.webdriver.support.ui import WebDriverWait
+        # from selenium.webdriver.support import expected_conditions as EC
+    # Objects
+
     seleniumCodeForSeleniumTask = nodeParser.translateTaskObjToTaskFn(seleniumTask)
     print(seleniumCodeForSeleniumTask)
     print("\n\n\n")
+
+    # Add function definition line (def something():) prior to lines returned from seleniumCodeForSeleniumTask
+
+    # Execute the function that has seleniumCodeForSeleniumTask lines
+
+    # Validate that the mocks were invoked correctly
+
+    # Validate function returns correct values with correct structure

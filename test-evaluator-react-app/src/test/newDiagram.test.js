@@ -225,6 +225,13 @@ describe("New Diagram - Create nodes", () => {
         expect(param1TextBox.value).toEqual("")
         fireEvent.change(param1TextBox, { target: { value: 'testParam0' } });
 
+        const returnsLocator1TextBox = screen.getByTestId("returnsLocatorInput0")
+        expect(returnsLocator1TextBox.value).toEqual("")
+        fireEvent.change(returnsLocator1TextBox, { target: { value: 'returnsLocator0' } });
+        const returnsAction1TextBox = screen.getByTestId("returnsActionInput0")
+        expect(returnsAction1TextBox.value).toEqual("")
+        fireEvent.change(returnsLocator1TextBox, { target: { value: 'returnsAction0' } });
+
         const addStepBtn = screen.getByTestId("addSeleniumStepBtn")
         fireEvent.click(addStepBtn)
 
@@ -258,6 +265,9 @@ describe("New Diagram - Create nodes", () => {
         expect(locator2TextBox.value).toEqual("testLocator1")
         expect(action2TextBox.value).toEqual("testAction1")
         expect(param2TextBox.value).toEqual("testParam1")
+
+        expect(returnsLocator1TextBox).toEqual("returnsLocator0")
+        expect(returnsAction1TextBox).toEqual("returnsAction0")
     })
 
 })

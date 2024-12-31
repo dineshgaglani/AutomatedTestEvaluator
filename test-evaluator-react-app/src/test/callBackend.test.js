@@ -375,4 +375,114 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         expect(outputAreaTxtArea.value).toEqual('TestData2Node1Response')
     })
 
+    it(`Selenium Input and Output Render`, async () => {
+        render(<App />)
+
+        const preEvalNodeBackground =  "rgb(255, 0, 114)"
+
+        //Create the diagram with one single node
+        const createNodeBtn = screen.getByTestId("createNode")
+        fireEvent.click(createNodeBtn);
+        const node1 = screen.getByTestId("rf__node-1")
+        expect(node1).toBeInTheDocument();
+        expect(node1.style.backgroundColor).toEqual(preEvalNodeBackground)
+
+        const inputAreaBtn = screen.queryByText("Node Task ^")
+        expect(inputAreaBtn).toBeNull()
+
+        fireEvent.click(createNodeBtn);
+        const node2 = screen.getByTestId("rf__node-2")
+        expect(node2).toBeInTheDocument();
+        const expandNodeBtnNode2 = within(node2).getByTestId("expandNode-2")
+
+        const nodeDescriptionTextboxNode2 = within(node2).getByLabelText("Node Description:")
+        fireEvent.change(nodeDescriptionTextboxNode2, { target: { value: 'New Text' } });
+
+        fireEvent.click(node2);
+        node2.focus()
+        await userEvent.keyboard('{Enter}');
+
+        const inputAreaBtnCollapsed = screen.getByText("Node Task ^")
+        fireEvent.click(inputAreaBtnCollapsed);
+        expect(screen.queryByText("Node Task ^")).toBeNull()
+        const inputAreaBtnExpanded = screen.getByText("Node Task >")
+
+        //Select "SeleniumUI" from the 'stepTypeSelector' combobox and enter some values for locator, action and param 
+        const nodeInputTypeSelectorContainer = screen.getByText('selectStepType:');
+        const nodeInputTypeSelector = nodeInputTypeSelectorContainer.querySelector('.Dropdown-control');
+        await userEvent.click(nodeInputTypeSelector);
+        const seleniumUIOption = screen.getByText('SeleniumUI');
+        await userEvent.click(seleniumUIOption)
+        
+        const locator1TextBox = screen.getByTestId("locatorInput0")
+        expect(locator1TextBox.value).toEqual("")
+        fireEvent.change(locator1TextBox, { target: { value: 'testLocator0' } });
+        const action1TextBox = screen.getByTestId("actionInput0")
+        expect(action1TextBox.value).toEqual("")
+        fireEvent.change(action1TextBox, { target: { value: 'testAction0' } });
+        const param1TextBox = screen.getByTestId("paramInput0")
+        expect(param1TextBox.value).toEqual("")
+        fireEvent.change(param1TextBox, { target: { value: 'testParam0' } });
+
+        const returnsLocator1TextBox = screen.getByTestId("returnsLocatorInput0")
+        expect(returnsLocator1TextBox.value).toEqual("")
+        fireEvent.change(returnsLocator1TextBox, { target: { value: 'returnsLocator0' } });
+        const returnsAction1TextBox = screen.getByTestId("returnsActionInput0")
+        expect(returnsAction1TextBox.value).toEqual("")
+        fireEvent.change(returnsLocator1TextBox, { target: { value: 'returnsAction0' } });
+
+        //Create the testData
+        const testDataIndex0 = screen.getByTestId("testData_1")
+        const testData0EditBtn = within(testDataIndex0).getByText('*')
+        fireEvent.click(testData0EditBtn)
+        const testData0Input = within(testDataIndex0).getByRole('textbox');
+        fireEvent.change(testData0Input, { target: { value: 'TestData1' } });
+        await userEvent.keyboard('{Enter}');
+        
+        //click on evaluate on diagram
+        const evaluateBtn = screen.getByTestId("evaluateBtn")
+        fireEvent.click(evaluateBtn)
+
+        mockServer.on('connection', socket => {
+            console.log(`Connection data on mock server: ${JSON.stringify(socket)}`)
+            socket.on('message', data => {
+                // Handle or verify received messages here
+                console.log(`Message data to mock server: ${JSON.stringify(data)}`)
+                setTimeout(() => {
+                    socket.send(JSON.stringify({ data: [{nodes_visited: ["1"], test_data_to_node_output: { TestData1: { 1: {"s3Locations": ["img1", "img2", "img3"], "title": "testValue"} } } }] }));
+                }, .05 * 1000);
+            });
+        });
+
+        const postEvalNodeBackground = "rgb(59, 177, 67)"
+
+        await waitFor( () => {
+            expect(node1.style.backgroundColor == postEvalNodeBackground).toEqual(true) 
+        }, {timeout: 20 * 1000})
+
+        //Click on the first test data
+        fireEvent.click(testDataIndex0)
+
+        fireEvent.click(node1)
+        node1.focus()
+        await userEvent.keyboard('{Enter}');
+
+        //Open output section
+        const outputAreaBtnCollapsed = screen.getByText("Node Output ^")
+        fireEvent.click(outputAreaBtnCollapsed);
+        expect(screen.queryByText("Node Output ^")).toBeNull()
+        const outputAreaBtnExpanded = screen.getByText("Node Output >")
+        const outputAreaTxtArea = screen.getByTestId("nodeOutput")
+
+        expect(outputAreaTxtArea.value).toEqual('TestData1Node2Response')
+
+        const outputAreaImage1 = screen.getByTestId("outputScr0")
+        const outputAreaImage2 = screen.getByTestId("outputScr1")
+        const outputAreaImage3 = screen.getByTestId("outputScr2")
+
+        expect(outputAreaImage1.getAttribute("src")).toEqual("img1")
+        expect(outputAreaImage2.getAttribute("src")).toEqual("img2")
+        expect(outputAreaImage3.getAttribute("src")).toEqual("img3")
+    })
+
 })

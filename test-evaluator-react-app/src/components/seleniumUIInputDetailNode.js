@@ -3,14 +3,32 @@ import React, { useEffect, useState } from 'react';
 function SeleniumUIInputDetailNode({ selectedNode }) {
 
     const newStep = { locator: "", action: "", param: "" }
-    const defaultCurrSteps = selectedNode.data.activationTask.taskType == "SeleniumUI" ? selectedNode.data.activationTask.taskProps : [newStep]
+    const newReturn = { name: "", locator: "" }
+
+    let defaultCurrSteps = [newStep]
+    let defaultCurrReturns = [newReturn]
+    if(selectedNode.data.activationTask.taskType == "SeleniumUI") {
+        defaultCurrSteps = selectedNode.data.activationTask.taskProps["steps"]
+        defaultCurrReturns = selectedNode.data.activationTask.taskProps["returns"]
+    } 
     const [currSteps, setCurrSteps] = useState(defaultCurrSteps)
     console.log(`Curr Steps on SeleniumUIInputDetailNode render: ${JSON.stringify(currSteps)}`)
 
+    const [currReturns, setCurrReturns] = useState(defaultCurrReturns)
+    console.log(`Curr Returns on SeleniumUIInputDetailNode render: ${JSON.stringify(currReturns)}`)
+
     useEffect(() => {
-        const effectCurrSteps = selectedNode.data.activationTask.taskType == "SeleniumUI" ? selectedNode.data.activationTask.taskProps : [newStep]
+        let effectCurrSteps = [newStep]
+        let effectCurrReturns = [newReturn] 
+        if(selectedNode.data.activationTask.taskType == "SeleniumUI") {
+            effectCurrSteps = selectedNode.data.activationTask.taskProps["steps"]
+            effectCurrReturns = selectedNode.data.activationTask.taskProps["returns"]
+        }
         setCurrSteps(effectCurrSteps)
         console.log(`Curr Steps on SeleniumUIInputDetailNode useEffect: ${JSON.stringify(currSteps)}`)
+
+        setCurrReturns(effectCurrReturns)
+        console.log(`Curr Returns on SeleniumUIInputDetailNode useEffect: ${JSON.stringify(currReturns)}`)
     }, [selectedNode])
 
     function onClickAddStep(event) {
@@ -21,35 +39,60 @@ function SeleniumUIInputDetailNode({ selectedNode }) {
         console.log(`Curr Steps on SeleniumUIInputDetailNode onClickAddStep: ${JSON.stringify(currSteps)}`)
     }
 
-    function getChangedSteps(steps, index, key, value) {
-        console.log(`Changing SeleniumUIInputDetailNode step at index: ${index}`)
-        const stepsBeforeChangedStep = steps.slice(0, index)
-        console.log(`Changing SeleniumUIInputDetailNode step: ${steps[index]}`)
-        const changedStep = { ...steps[index], [key]: value }
-        const stepsAfterChangedStep = steps.slice(index + 1)
-        const newSteps = [...stepsBeforeChangedStep, changedStep, ...stepsAfterChangedStep] // Concatenate
-        return newSteps
+    function onClickAddReturn(event) {
+        selectedNode.data.activationTask.taskType = "SeleniumUI"
+        setCurrReturns(returns => {
+            return [...returns, newReturn]
+        })
+        console.log(`Curr Returns on SeleniumUIInputDetailNode onClickAddReturn: ${JSON.stringify(currReturns)}`)
     }
 
-    function onChange(index, key, value) {
+    function getChangedList(list, index, key, value) {
+        console.log(`Changing SeleniumUIInputDetailNode list at index: ${index}`)
+        const itemsBeforeChangedItem = list.slice(0, index)
+        console.log(`Changing SeleniumUIInputDetailNode list item: ${list[index]}`)
+        const changedItem = { ...list[index], [key]: value }
+        const listAfterChangedItem = list.slice(index + 1)
+        const newList = [...itemsBeforeChangedItem, changedItem, ...listAfterChangedItem] // Concatenate
+        return newList
+    }
+
+    function onChangeSteps(index, key, value) {
         setCurrSteps((steps) => {
-            const newSteps = getChangedSteps(steps, index, key, value)
+            const newSteps = getChangedList(steps, index, key, value)
             console.log(`Updated Curr Steps in setCurrSteps: ${JSON.stringify(newSteps)}`)
             return newSteps
         })
-        selectedNode.data.activationTask.taskProps = getChangedSteps(currSteps, index, key, value)
+        selectedNode.data.activationTask.taskProps["steps"] = getChangedList(currSteps, index, key, value)
     }
 
     function onLocatorChange(event, index) {
-        onChange(index, "locator", event.target.value)
+        onChangeSteps(index, "locator", event.target.value)
     }
 
     function onActionChange(event, index) {
-        onChange(index, "action", event.target.value)
+        onChangeSteps(index, "action", event.target.value)
     }
 
     function onParamChange(event, index) {
-        onChange(index, "param", event.target.value)
+        onChangeSteps(index, "param", event.target.value)
+    }
+
+    function onChangeReturns(index, key, value) {
+        setCurrReturns((returns) => {
+            const newReturns = getChangedList(returns, index, key, value)
+            console.log(`Updated Curr Returns in setCurrReturns: ${JSON.stringify(newReturns)}`)
+            return newReturns
+        })
+        selectedNode.data.activationTask.taskProps["returns"] = getChangedList(currReturns, index, key, value)
+    }
+
+    function onReturnsLocatorChange(event, index) {
+        onChangeReturns(index, "locator", event.target.value)
+    }
+
+    function onReturnsNameChange(event, index) {
+        onChangeReturns(index, "name", event.target.value)
     }
 
     return (
@@ -66,6 +109,18 @@ function SeleniumUIInputDetailNode({ selectedNode }) {
 
                         <label for="param">Param:</label>
                         <input onChange={(e) => onParamChange(e, index)} data-testid={`paramInput${index}`} value={currStep.param}></input>
+                    </div>
+                ))}
+            </div>
+            <button data-testid="addReturnValBtn" onClick={onClickAddReturn}>Add Return Value</button>
+            <div data-testid="returnsContainer">
+                {currReturns.map((currReturn, index) => (
+                    <div data-testid={`return${index}`} key={index}>
+                        <label for="returnLocator">Locator:</label>
+                        <input onChange={(e) => onReturnsLocatorChange(e, index)} data-testid={`returnsLocatorInput${index}`} value={currReturn.locator}></input>
+
+                        <label for="returnName">Name:</label>
+                        <input onChange={(e) => onReturnsNameChange(e, index)} data-testid={`returnsActionInput${index}`} value={currReturn.name}></input>
                     </div>
                 ))}
             </div>
