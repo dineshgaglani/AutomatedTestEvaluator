@@ -120,7 +120,7 @@ function SeleniumUIInputDetailNode({ selectedNode }) {
                         <input onChange={(e) => onReturnsLocatorChange(e, index)} data-testid={`returnsLocatorInput${index}`} value={currReturn.locator}></input>
 
                         <label for="returnName">Name:</label>
-                        <input onChange={(e) => onReturnsNameChange(e, index)} data-testid={`returnsActionInput${index}`} value={currReturn.name}></input>
+                        <input onChange={(e) => onReturnsNameChange(e, index)} data-testid={`returnsNameInput${index}`} value={currReturn.name}></input>
                     </div>
                 ))}
             </div>

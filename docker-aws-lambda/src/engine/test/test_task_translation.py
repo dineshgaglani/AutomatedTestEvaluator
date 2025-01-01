@@ -1,5 +1,25 @@
 import requests
-from .. import nodeParser
+import os
+import sys
+
+# All imports for mocking nodeParser selenium task function
+import random
+import string
+import time
+from selenium.webdriver.common.by import By
+
+import unittest
+from unittest.mock import MagicMock, patch
+
+# Get the directory of the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the path to the 'src' directory
+src_path = os.path.join(script_dir, '../../..', 'src')
+
+# Add the directory to sys.path
+sys.path.append(src_path)
+import engine.nodeParser as nodeParser
 
 # Comment out 'from engine.engine import Node' from nodeParser to exec this
 # Execute using command - /Library/Developer/CommandLineTools/usr/bin/python3 -m pytest test_task_translation.py 
@@ -98,7 +118,9 @@ def test_httpGetCallWithContextAndTestDataVars():
     assert getCallResult['id'] == 1
     assert getCallResult['title'] == "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops"
 
-def test_seleniumMultiStepsWithContextAndTestData():
+@patch('engine.nodeParser.webdriver')
+@patch('engine.nodeParser.boto3')
+def test_seleniumMultiStepsWithContextAndTestData(mock_webdriver, mock_boto3):
     seleniumTask = {
         "taskType": "SeleniumUI",
         "taskProps":  {
@@ -106,8 +128,8 @@ def test_seleniumMultiStepsWithContextAndTestData():
                       { "locator": "{currTestData[\"clickParam\"]}", "action": "click", "param": "" }, 
                       { "locator": "input[name=\"active\"]", "action": "send_keys", "param": '{currTestData[\"sendKeysParam\"]}' }],
             "returns": [{"locator": "input[name=\"return\"]", "name": "val"},
-                        {"locator": '{currTestData[\"returnParam\"]}', "name": "valWithTestData"},
-                        {"locator": '{context[\"returnParam\"]}', "name": "valWithContext"}]
+                        {"locator": '{currTestData[\"testDataReturnParam\"]}', "name": "valWithTestData"},
+                        {"locator": '{context[\"contextReturnParam\"]}', "name": "valWithContext"}]
         }
     }
 
@@ -120,14 +142,39 @@ def test_seleniumMultiStepsWithContextAndTestData():
         # from selenium.webdriver.support import expected_conditions as EC
     # Objects
 
+    mock_driver = MagicMock()
+    # Mock behaviors
+    mock_driver.get = MagicMock()
+    mock_driver.find_element.return_value.click = MagicMock()
+    mock_driver.find_element.return_value.send_keys = MagicMock()
+    mock_driver.find_element.return_value.submit = MagicMock()
+    mock_driver.save_screenshot = MagicMock()
+    mock_driver.find_element.return_value.text = MagicMock()
+
+    mock_s3 = MagicMock()
+    mock_boto3 = MagicMock()
+    mock_boto3.client.return_value = mock_s3
+    
+    mock_s3.upload_file = MagicMock()
+    mock_s3.generate_presigned_url = MagicMock()
+
+    context = {'baseUrl': 'https://testuisite.com', 'contextReturnParam': 'testContextReturnParam', 'webUiDriver': mock_driver}
+    currTestData = {'clickParam': 'testClickParamLocator', 'sendKeysParam': 'testSendKeysParam', 'testDataReturnParam': 'testTestDataReturnParam'}
+
     seleniumCodeForSeleniumTask = nodeParser.translateTaskObjToTaskFn(seleniumTask)
+
+    # Add function definition line (def something():) prior to lines returned from seleniumCodeForSeleniumTask
+    seleniumCodeForSeleniumTask = seleniumCodeForSeleniumTask.replace(';', '\n   ')
+    seleniumCodeForSeleniumTask = f'def testFn():\n    {seleniumCodeForSeleniumTask}'
     print(seleniumCodeForSeleniumTask)
     print("\n\n\n")
 
-    # Add function definition line (def something():) prior to lines returned from seleniumCodeForSeleniumTask
-
     # Execute the function that has seleniumCodeForSeleniumTask lines
+    globals_dict = {'webdriver': mock_driver, 'context': context, 'currTestData': currTestData, 'boto3': mock_boto3, 'random': random, 'string': string, 'time': time, 'By': By}
+    exec(seleniumCodeForSeleniumTask, globals_dict)
 
     # Validate that the mocks were invoked correctly
 
     # Validate function returns correct values with correct structure
+    testFnResult = globals_dict['testFn']()
+    print(testFnResult)

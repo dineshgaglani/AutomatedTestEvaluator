@@ -23,6 +23,8 @@ function OutputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDiffe
     useEffect(() => {
         console.log(`UseEffect in outputDetails: selectedNode.data.output: ${JSON.stringify(selectedNode.data.output)}, selectedTestData: ${selectedTestData}`)
         setTextAreaValue("")
+        setImages([])
+        setImageTypeOutput(false)
         setResponsiveTextAreaHeight(textAreaHeight)
         selectedTestData = selectedTestData.replace(/"/g, "'"); // Because the result from the backend has single quotes
         if (selectedNode.data.output && selectedNode.data.output[selectedTestData]) {

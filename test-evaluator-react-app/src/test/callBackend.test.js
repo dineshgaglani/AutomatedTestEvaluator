@@ -427,9 +427,19 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         const returnsLocator1TextBox = screen.getByTestId("returnsLocatorInput0")
         expect(returnsLocator1TextBox.value).toEqual("")
         fireEvent.change(returnsLocator1TextBox, { target: { value: 'returnsLocator0' } });
-        const returnsAction1TextBox = screen.getByTestId("returnsActionInput0")
-        expect(returnsAction1TextBox.value).toEqual("")
-        fireEvent.change(returnsLocator1TextBox, { target: { value: 'returnsAction0' } });
+        const returnsName1TextBox = screen.getByTestId("returnsNameInput0")
+        expect(returnsName1TextBox.value).toEqual("")
+        fireEvent.change(returnsName1TextBox, { target: { value: 'returnsName0' } });
+
+        fireEvent.click(node1);
+        node1.focus()
+        await userEvent.keyboard('{Enter}');
+
+        fireEvent.click(node2);
+        node2.focus()
+        await userEvent.keyboard('{Enter}');
+
+
 
         //Create the testData
         const testDataIndex0 = screen.getByTestId("testData_1")
@@ -449,7 +459,7 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
                 // Handle or verify received messages here
                 console.log(`Message data to mock server: ${JSON.stringify(data)}`)
                 setTimeout(() => {
-                    socket.send(JSON.stringify({ data: [{nodes_visited: ["1"], test_data_to_node_output: { TestData1: { 1: {"s3Locations": ["img1", "img2", "img3"], "title": "testValue"} } } }] }));
+                    socket.send(JSON.stringify({ data: [{nodes_visited: ["2"], test_data_to_node_output: { TestData1: { "2": '{"s3Locations": ["img1", "img2", "img3"], "title": "testValue"}' } } }] }));
                 }, .05 * 1000);
             });
         });
@@ -457,14 +467,19 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         const postEvalNodeBackground = "rgb(59, 177, 67)"
 
         await waitFor( () => {
-            expect(node1.style.backgroundColor == postEvalNodeBackground).toEqual(true) 
+            expect(node2.style.backgroundColor == postEvalNodeBackground).toEqual(true) 
         }, {timeout: 20 * 1000})
 
         //Click on the first test data
         fireEvent.click(testDataIndex0)
 
+        //Changing nodes to force invoke output render
         fireEvent.click(node1)
         node1.focus()
+        await userEvent.keyboard('{Enter}');
+
+        fireEvent.click(node2)
+        node2.focus()
         await userEvent.keyboard('{Enter}');
 
         //Open output section
@@ -474,7 +489,7 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         const outputAreaBtnExpanded = screen.getByText("Node Output >")
         const outputAreaTxtArea = screen.getByTestId("nodeOutput")
 
-        expect(outputAreaTxtArea.value).toEqual('TestData1Node2Response')
+        expect(outputAreaTxtArea.value).toEqual("{\"title\":\"testValue\"}")
 
         const outputAreaImage1 = screen.getByTestId("outputScr0")
         const outputAreaImage2 = screen.getByTestId("outputScr1")
