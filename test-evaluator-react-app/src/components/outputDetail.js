@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { convertObjectStringToSingleQuotesString } from '../utils/jsonUtils.js';
 
 function OutputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDifferential, textAreaHeight, selectedNode, selectedTestData }) {
 
@@ -21,19 +22,20 @@ function OutputDetail({ infoText, diagPaneHeight, setDiagPaneHeight, heightDiffe
     }
 
     useEffect(() => {
-        console.log(`UseEffect in outputDetails: selectedNode.data.output: ${JSON.stringify(selectedNode.data.output)}, selectedTestData: ${selectedTestData}`)
+        console.log(`UseEffect in outputDetails: selectedNode.data.output: ${JSON.stringify(selectedNode.data.output)}, selectedTestData: ${JSON.stringify(selectedTestData)}`)
         setTextAreaValue("")
         setImages([])
         setImageTypeOutput(false)
         setResponsiveTextAreaHeight(textAreaHeight)
-        selectedTestData = selectedTestData.replace(/"/g, "'"); // Because the result from the backend has single quotes
-        if (selectedNode.data.output && selectedNode.data.output[selectedTestData]) {
-            console.log(`setting textarea value to ${JSON.stringify(selectedNode.data.output[selectedTestData])}`)
+        const selectedTestDataStr = convertObjectStringToSingleQuotesString(selectedTestData)
+        console.log(`selectedTestData after string conversion: ${selectedTestDataStr}`)
+        if (selectedNode.data.output && selectedNode.data.output[selectedTestDataStr]) {
+            console.log(`setting textarea value to ${JSON.stringify(selectedNode.data.output[selectedTestDataStr])}`)
             //TODO - create a new component for SeleniumUI instead of using if here
-            let textAreaValue = selectedNode.data.output[selectedTestData]
+            let textAreaValue = selectedNode.data.output[selectedTestDataStr]
             if (selectedNode.data.activationTask.taskType == "SeleniumUI") {
                 setImageTypeOutput(true)
-                const parsedToJsonSeleniumResponse = JSON.parse(selectedNode.data.output[selectedTestData])
+                const parsedToJsonSeleniumResponse = JSON.parse(selectedNode.data.output[selectedTestDataStr])
                 const parsedToJsonImages = parsedToJsonSeleniumResponse["s3Locations"]
                 setImages(parsedToJsonImages)
                 const { s3Locations, ...objExcludingS3LocationsKey } = parsedToJsonSeleniumResponse

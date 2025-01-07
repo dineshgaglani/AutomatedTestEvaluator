@@ -25,10 +25,10 @@ function SeleniumUIInputDetailNode({ selectedNode }) {
             effectCurrReturns = selectedNode.data.activationTask.taskProps["returns"]
         }
         setCurrSteps(effectCurrSteps)
-        console.log(`Curr Steps on SeleniumUIInputDetailNode useEffect: ${JSON.stringify(currSteps)}`)
+        // console.log(`Curr Steps on SeleniumUIInputDetailNode useEffect: ${JSON.stringify(currSteps)}`)
 
         setCurrReturns(effectCurrReturns)
-        console.log(`Curr Returns on SeleniumUIInputDetailNode useEffect: ${JSON.stringify(currReturns)}`)
+        // console.log(`Curr Returns on SeleniumUIInputDetailNode useEffect: ${JSON.stringify(currReturns)}`)
     }, [selectedNode])
 
     function onClickAddStep(event) {
@@ -36,7 +36,7 @@ function SeleniumUIInputDetailNode({ selectedNode }) {
         setCurrSteps(steps => {
             return [...steps, newStep]
         })
-        console.log(`Curr Steps on SeleniumUIInputDetailNode onClickAddStep: ${JSON.stringify(currSteps)}`)
+        // console.log(`Curr Steps on SeleniumUIInputDetailNode onClickAddStep: ${JSON.stringify(currSteps)}`)
     }
 
     function onClickAddReturn(event) {
@@ -44,13 +44,13 @@ function SeleniumUIInputDetailNode({ selectedNode }) {
         setCurrReturns(returns => {
             return [...returns, newReturn]
         })
-        console.log(`Curr Returns on SeleniumUIInputDetailNode onClickAddReturn: ${JSON.stringify(currReturns)}`)
+        // console.log(`Curr Returns on SeleniumUIInputDetailNode onClickAddReturn: ${JSON.stringify(currReturns)}`)
     }
 
     function getChangedList(list, index, key, value) {
-        console.log(`Changing SeleniumUIInputDetailNode list at index: ${index}`)
+        // console.log(`Changing SeleniumUIInputDetailNode list at index: ${index}`)
         const itemsBeforeChangedItem = list.slice(0, index)
-        console.log(`Changing SeleniumUIInputDetailNode list item: ${list[index]}`)
+        // console.log(`Changing SeleniumUIInputDetailNode list item: ${list[index]}`)
         const changedItem = { ...list[index], [key]: value }
         const listAfterChangedItem = list.slice(index + 1)
         const newList = [...itemsBeforeChangedItem, changedItem, ...listAfterChangedItem] // Concatenate
@@ -60,7 +60,7 @@ function SeleniumUIInputDetailNode({ selectedNode }) {
     function onChangeSteps(index, key, value) {
         setCurrSteps((steps) => {
             const newSteps = getChangedList(steps, index, key, value)
-            console.log(`Updated Curr Steps in setCurrSteps: ${JSON.stringify(newSteps)}`)
+            // console.log(`Updated Curr Steps in setCurrSteps: ${JSON.stringify(newSteps)}`)
             return newSteps
         })
         selectedNode.data.activationTask.taskProps["steps"] = getChangedList(currSteps, index, key, value)
@@ -81,7 +81,7 @@ function SeleniumUIInputDetailNode({ selectedNode }) {
     function onChangeReturns(index, key, value) {
         setCurrReturns((returns) => {
             const newReturns = getChangedList(returns, index, key, value)
-            console.log(`Updated Curr Returns in setCurrReturns: ${JSON.stringify(newReturns)}`)
+            // console.log(`Updated Curr Returns in setCurrReturns: ${JSON.stringify(newReturns)}`)
             return newReturns
         })
         selectedNode.data.activationTask.taskProps["returns"] = getChangedList(currReturns, index, key, value)

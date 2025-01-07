@@ -12,6 +12,9 @@ jest.setTimeout(60 * 1000)
 describe(`For a diagram that is being evaluated the output and the nodes colors should change accordingly`, () => {
 
     let mockServer;
+    const UNEXECUTED_NODE_COLOR = "rgb(255, 0, 114)"
+    const EXECUTED_NODE_COLOR = "rgb(59, 177, 67)"
+    const TEST_DATA_EXECUTED_NODE_COLOR = "rgb(92, 214, 214)"
 
     beforeEach(() => {
         mockServer = new Server('wss://0ig7g8kowd.execute-api.us-east-1.amazonaws.com/test/');
@@ -38,9 +41,8 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         const createNodeBtn = screen.getByTestId("createNode")
         fireEvent.click(createNodeBtn);
         const node1 = screen.getByTestId("rf__node-1")
-        expect(node1).toBeInTheDocument();
-        const node1PreEvalExpectedColor =  "rgb(255, 0, 114)"
-        expect(node1.style.backgroundColor).toEqual(node1PreEvalExpectedColor)
+        expect(node1).toBeInTheDocument(); 
+        expect(node1.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         //click on evaluate on diagram
         const evaluateBtn = screen.getByTestId("evaluateBtn")
@@ -59,8 +61,7 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
 
         //Validate the node's color 
         await new Promise(resolve => setTimeout(resolve, 10000));
-        const node1PostEvalExpectedColor =  "rgb(59, 177, 67)"
-        expect(node1.style.backgroundColor).toEqual(node1PostEvalExpectedColor)
+        expect(node1.style.backgroundColor).toEqual(EXECUTED_NODE_COLOR)
         
 
         //click on nodeOutput to view rendered output
@@ -86,8 +87,7 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         fireEvent.click(createNodeBtn);
         const node1 = screen.getByTestId("rf__node-1")
         expect(node1).toBeInTheDocument();
-        const node1PreEvalExpectedColor =  "rgb(255, 0, 114)"
-        expect(node1.style.backgroundColor).toEqual(node1PreEvalExpectedColor)
+        expect(node1.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         //Create the testData
         const testDataIndex0 = screen.getByTestId("testData_1")
@@ -133,8 +133,7 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         //Validate the node's color 
         await new Promise(resolve => setTimeout(resolve, 10000));
 
-        const node1PostEvalExpectedColor =  "rgb(59, 177, 67)"
-        expect(node1.style.backgroundColor).toEqual(node1PostEvalExpectedColor)
+        expect(node1.style.backgroundColor).toEqual(EXECUTED_NODE_COLOR)
 
         //click on nodeOutput to view rendered output
         fireEvent.click(node1)
@@ -143,6 +142,7 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
 
         //Click on the first test data
         fireEvent.click(testDataIndex1)
+        expect(node1.style.backgroundColor).toEqual(TEST_DATA_EXECUTED_NODE_COLOR)
 
         //Open output section
         const outputAreaBtnCollapsed = screen.getByText("Node Output ^")
@@ -158,6 +158,7 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
 
         fireEvent.click(testDataIndex2)
         expect(outputAreaTxtArea.value).toEqual('')
+        expect(node1.style.backgroundColor).toEqual(EXECUTED_NODE_COLOR)
     })
 
     //Multipe nodes single testdata
@@ -165,24 +166,22 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         //Render App component
         render(<App />)
 
-        const preEvalNodeBackground =  "rgb(255, 0, 114)"
-
         //Create the diagram with one single node
         const createNodeBtn = screen.getByTestId("createNode")
         fireEvent.click(createNodeBtn);
         const node1 = screen.getByTestId("rf__node-1")
         expect(node1).toBeInTheDocument();
-        expect(node1.style.backgroundColor).toEqual(preEvalNodeBackground)
+        expect(node1.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         fireEvent.click(createNodeBtn);
         const node2 = screen.getByTestId("rf__node-2")
         expect(node2).toBeInTheDocument();
-        expect(node2.style.backgroundColor).toEqual(preEvalNodeBackground)
+        expect(node2.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         fireEvent.click(createNodeBtn);
         const node3 = screen.getByTestId("rf__node-3")
         expect(node3).toBeInTheDocument();
-        expect(node3.style.backgroundColor).toEqual(preEvalNodeBackground)
+        expect(node3.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         //Create the testData
         const testDataIndex0 = screen.getByTestId("testData_1")
@@ -211,18 +210,16 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
             });
         });
 
-        const postEvalNodeBackground = "rgb(59, 177, 67)"
-
         await waitFor( () => {
-            expect(node1.style.backgroundColor == postEvalNodeBackground && node2.style.backgroundColor == preEvalNodeBackground).toEqual(true) 
+            expect(node1.style.backgroundColor == EXECUTED_NODE_COLOR && node2.style.backgroundColor == UNEXECUTED_NODE_COLOR).toEqual(true) 
         }, {timeout: 20 * 1000})
 
         await waitFor( () => {
-            expect(node1.style.backgroundColor == postEvalNodeBackground && node2.style.backgroundColor == postEvalNodeBackground).toEqual(true) 
+            expect(node1.style.backgroundColor == EXECUTED_NODE_COLOR && node2.style.backgroundColor == EXECUTED_NODE_COLOR).toEqual(true) 
         }, {timeout: 20 * 1000})
 
         //Node3 was not visited
-        expect(node3.style.backgroundColor).toEqual(preEvalNodeBackground)
+        expect(node3.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         fireEvent.click(node1)
         node1.focus()
@@ -256,24 +253,27 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         //Render App component
         render(<App />)
 
-        const preEvalNodeBackground =  "rgb(255, 0, 114)"
-
         //Create the diagram with one single node
         const createNodeBtn = screen.getByTestId("createNode")
         fireEvent.click(createNodeBtn);
         const node1 = screen.getByTestId("rf__node-1")
         expect(node1).toBeInTheDocument();
-        expect(node1.style.backgroundColor).toEqual(preEvalNodeBackground)
+        expect(node1.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         fireEvent.click(createNodeBtn);
         const node2 = screen.getByTestId("rf__node-2")
         expect(node2).toBeInTheDocument();
-        expect(node2.style.backgroundColor).toEqual(preEvalNodeBackground)
+        expect(node2.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         fireEvent.click(createNodeBtn);
         const node3 = screen.getByTestId("rf__node-3")
         expect(node3).toBeInTheDocument();
-        expect(node3.style.backgroundColor).toEqual(preEvalNodeBackground)
+        expect(node3.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
+
+        fireEvent.click(createNodeBtn);
+        const node4 = screen.getByTestId("rf__node-4")
+        expect(node3).toBeInTheDocument();
+        expect(node3.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         //Create the testData
         const testDataIndex0 = screen.getByTestId("testData_1")
@@ -311,23 +311,21 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
                 }, .05 * 1000);
 
                 setTimeout(() => {
-                    socket.send(JSON.stringify({ data: [{nodes_visited: ["1", "2"], test_data_to_node_output: { TestData1: { 1: 'TestData1Node1Response', 2: 'TestData1Node2Response' }, TestData2: {1: 'TestData2Node1Response', 2: 'TestData2Node2Response'} } }] }));
+                    socket.send(JSON.stringify({ data: [{nodes_visited: ["1", "2", "3"], test_data_to_node_output: { TestData1: { 1: 'TestData1Node1Response', 2: 'TestData1Node2Response' }, TestData2: {1: 'TestData2Node1Response', 2: 'TestData2Node2Response'}, TestData3: {3: 'TestData3Node3Response'} } }] }));
                 }, .1 * 1000);
             });
         });
 
-        const postEvalNodeBackground = "rgb(59, 177, 67)"
-
         await waitFor( () => {
-            expect(node1.style.backgroundColor == postEvalNodeBackground && node2.style.backgroundColor == preEvalNodeBackground).toEqual(true) 
+            expect(node1.style.backgroundColor == EXECUTED_NODE_COLOR && node2.style.backgroundColor == UNEXECUTED_NODE_COLOR).toEqual(true) 
         }, {timeout: 20 * 1000})
 
         await waitFor( () => {
-            expect(node1.style.backgroundColor == postEvalNodeBackground && node2.style.backgroundColor == postEvalNodeBackground).toEqual(true) 
+            expect(node1.style.backgroundColor == EXECUTED_NODE_COLOR && node2.style.backgroundColor == EXECUTED_NODE_COLOR && node3.style.backgroundColor == EXECUTED_NODE_COLOR).toEqual(true) 
         }, {timeout: 20 * 1000})
 
-        //Node3 was not visited
-        expect(node3.style.backgroundColor).toEqual(preEvalNodeBackground)
+        //Node4 was not visited
+        expect(node4.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         //Click on the first test data
         fireEvent.click(testDataIndex0)
@@ -351,6 +349,11 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
 
         expect(outputAreaTxtArea.value).toEqual('TestData1Node2Response')
 
+        expect(node1.style.backgroundColor).toEqual(TEST_DATA_EXECUTED_NODE_COLOR)
+        expect(node2.style.backgroundColor).toEqual(TEST_DATA_EXECUTED_NODE_COLOR)
+        expect(node3.style.backgroundColor).toEqual(EXECUTED_NODE_COLOR)
+        expect(node4.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
+
         fireEvent.click(node3)
         node3.focus()
         await userEvent.keyboard('{Enter}');
@@ -373,19 +376,29 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         await userEvent.keyboard('{Enter}');
 
         expect(outputAreaTxtArea.value).toEqual('TestData2Node1Response')
+
+        expect(node1.style.backgroundColor).toEqual(TEST_DATA_EXECUTED_NODE_COLOR)
+        expect(node2.style.backgroundColor).toEqual(TEST_DATA_EXECUTED_NODE_COLOR)
+        expect(node3.style.backgroundColor).toEqual(EXECUTED_NODE_COLOR)
+        expect(node4.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
+
+        fireEvent.click(testDataIndex2)
+
+        expect(node1.style.backgroundColor).toEqual(EXECUTED_NODE_COLOR)
+        expect(node2.style.backgroundColor).toEqual(EXECUTED_NODE_COLOR)
+        expect(node3.style.backgroundColor).toEqual(TEST_DATA_EXECUTED_NODE_COLOR)
+        expect(node4.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
     })
 
     it(`Selenium Input and Output Render`, async () => {
         render(<App />)
-
-        const preEvalNodeBackground =  "rgb(255, 0, 114)"
 
         //Create the diagram with one single node
         const createNodeBtn = screen.getByTestId("createNode")
         fireEvent.click(createNodeBtn);
         const node1 = screen.getByTestId("rf__node-1")
         expect(node1).toBeInTheDocument();
-        expect(node1.style.backgroundColor).toEqual(preEvalNodeBackground)
+        expect(node1.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
 
         const inputAreaBtn = screen.queryByText("Node Task ^")
         expect(inputAreaBtn).toBeNull()
@@ -439,14 +452,20 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         node2.focus()
         await userEvent.keyboard('{Enter}');
 
-
-
         //Create the testData
         const testDataIndex0 = screen.getByTestId("testData_1")
         const testData0EditBtn = within(testDataIndex0).getByText('*')
         fireEvent.click(testData0EditBtn)
         const testData0Input = within(testDataIndex0).getByRole('textbox');
-        fireEvent.change(testData0Input, { target: { value: 'TestData1' } });
+        fireEvent.change(testData0Input, { target: { value: JSON.stringify({"user": "student", "titleLocator": "h1.post-title"}) } });
+        await userEvent.keyboard('{Enter}');
+
+        //Create the testData
+        const testDataIndex1 = screen.getByTestId("testData_2")
+        const testData1EditBtn = within(testDataIndex1).getByText('*')
+        fireEvent.click(testData1EditBtn)
+        const testData1Input = within(testDataIndex1).getByRole('textbox');
+        fireEvent.change(testData1Input, { target: { value: JSON.stringify({"user": "abc", "titleLocator": "#error"}) } });
         await userEvent.keyboard('{Enter}');
         
         //click on evaluate on diagram
@@ -459,19 +478,14 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
                 // Handle or verify received messages here
                 console.log(`Message data to mock server: ${JSON.stringify(data)}`)
                 setTimeout(() => {
-                    socket.send(JSON.stringify({ data: [{nodes_visited: ["2"], test_data_to_node_output: { TestData1: { "2": '{"s3Locations": ["img1", "img2", "img3"], "title": "testValue"}' } } }] }));
+                    socket.send(JSON.stringify({ data: [{nodes_visited: ["2"], test_data_to_node_output: { "{'user': 'student', 'titleLocator': 'h1.post-title'}": { 2: '{"s3Locations": ["img1", "img2", "img3"], "title": "testValue"}' } } }] }));
                 }, .05 * 1000);
             });
         });
 
-        const postEvalNodeBackground = "rgb(59, 177, 67)"
-
         await waitFor( () => {
-            expect(node2.style.backgroundColor == postEvalNodeBackground).toEqual(true) 
+            expect(node2.style.backgroundColor == EXECUTED_NODE_COLOR).toEqual(true) 
         }, {timeout: 20 * 1000})
-
-        //Click on the first test data
-        fireEvent.click(testDataIndex0)
 
         //Changing nodes to force invoke output render
         fireEvent.click(node1)
@@ -481,6 +495,13 @@ describe(`For a diagram that is being evaluated the output and the nodes colors 
         fireEvent.click(node2)
         node2.focus()
         await userEvent.keyboard('{Enter}');
+
+        //Change and Click on the first test data
+        fireEvent.click(testDataIndex1)
+        fireEvent.click(testDataIndex0)
+
+        expect(node1.style.backgroundColor).toEqual(UNEXECUTED_NODE_COLOR)
+        expect(node2.style.backgroundColor).toEqual(TEST_DATA_EXECUTED_NODE_COLOR)
 
         //Open output section
         const outputAreaBtnCollapsed = screen.getByText("Node Output ^")

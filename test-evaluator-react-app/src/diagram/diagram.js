@@ -12,6 +12,7 @@ import TextUpdaterNode from '../nodes/TextNode.js';
 import SavedDiagramsModal from '../components/savedDiagramsModal.js';
 import OutputDetail from '../components/outputDetail.js'
 import InputDetailOptimized from '../components/inputDetailOptimized';
+import { convertObjectStringToSingleQuotesString } from '../utils/jsonUtils.js';
 
 
 function convertToNodeIdToTestDataResult(testDataToNodeId) {
@@ -33,6 +34,10 @@ function convertToNodeIdToTestDataResult(testDataToNodeId) {
 }
 
 function Diagram({ socketOpen, testData, envData, selectedTestDataIndex, isExpectationInProgress }) {
+
+  const UNEXECUTED_NODE_COLOR = "#ff0072"
+  const EXECUTED_NODE_COLOR = "#3bb143"
+  const TEST_DATA_EXECUTED_NODE_COLOR = "#5cd6d6"
 
   const allDiagrams = {
     "FakerApiProducts": {
@@ -1094,7 +1099,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex, isExpec
       ]
     },
     "UIWithSeleniumSteps": {
-      "nodes": [{"id":"1","type":"textUpdater","data":{"nodeId":1,"activationTask":{"taskType":"SeleniumUI","taskProps":{"steps":[{"locator":"","action":"navigate","param":"https://practicetestautomation.com/practice-test-login/"},{"locator":"input[name=\\\"username\\\"]","action":"send_keys","param":"{currTestData[\"user\"]}"},{"locator":"input[name=\\\"password\\\"]","action":"send_keys","param":"Password123"},{"locator":"#submit","action":"click","param":""}],"returns":[{"name":"title","locator":"{currTestData[\"titleLocator\"]}"}]}},"label":"Enter Details","activationEligibilityDescription":"","activationEligibility":"return True"},"position":{"x":204,"y":30},"style":{"backgroundColor":"#ff0072","color":"white"},"width":296,"height":70,"selected":false,"dragging":false,"positionAbsolute":{"x":204,"y":30}},{"id":"2","type":"textUpdater","data":{"nodeId":2,"activationTask":{"taskType":"PythonCode","taskProps":{"pythonText":"print(\"Successful Login\"); return \"Successful Login\""}},"label":"Valid username flow","activationEligibilityDescription":"","activationEligibility":"return priorActionResults['Enter Details']['title'] == \"Logged In Successfully\""},"position":{"x":44,"y":190},"style":{"backgroundColor":"#ff0072","color":"white"},"width":312,"height":153,"selected":false,"dragging":false,"positionAbsolute":{"x":44,"y":190}},{"id":"3","type":"textUpdater","data":{"nodeId":3,"activationTask":{"taskType":"SeleniumUI","taskProps":{"httpMethod":"GET","httpAddress":"","steps":[{"locator":"#username","action":"send_keys","param":"xyz"}],"returns":[{"name":"username","locator":"#username"}]}},"label":"Invalid username flow","activationEligibilityDescription":"","activationEligibility":"return priorActionResults['Enter Details']['title'] == \"Your username is invalid!\""},"position":{"x":421,"y":180},"style":{"backgroundColor":"#ff0072","color":"white"},"width":312,"height":153,"selected":true,"positionAbsolute":{"x":421,"y":180},"dragging":false}],"edges":[{"source":"1","sourceHandle":"a","target":"2","targetHandle":null,"id":"reactflow__edge-1a-2"},{"source":"1","sourceHandle":"a","target":"3","targetHandle":null,"id":"reactflow__edge-1a-3"}]
+      "nodes": [{ "id": "1", "type": "textUpdater", "data": { "nodeId": 1, "activationTask": { "taskType": "SeleniumUI", "taskProps": { "steps": [{ "locator": "", "action": "navigate", "param": "https://practicetestautomation.com/practice-test-login/" }, { "locator": "input[name=\\\"username\\\"]", "action": "send_keys", "param": "{currTestData[\"user\"]}" }, { "locator": "input[name=\\\"password\\\"]", "action": "send_keys", "param": "Password123" }, { "locator": "#submit", "action": "click", "param": "" }], "returns": [{ "name": "title", "locator": "{currTestData[\"titleLocator\"]}" }] } }, "label": "Enter Details", "activationEligibilityDescription": "", "activationEligibility": "return True" }, "position": { "x": 204, "y": 30 }, "style": { "backgroundColor": "#ff0072", "color": "white" }, "width": 296, "height": 70, "selected": false, "dragging": false, "positionAbsolute": { "x": 204, "y": 30 } }, { "id": "2", "type": "textUpdater", "data": { "nodeId": 2, "activationTask": { "taskType": "PythonCode", "taskProps": { "pythonText": "print(\"Successful Login\"); return \"Successful Login\"" } }, "label": "Valid username flow", "activationEligibilityDescription": "", "activationEligibility": "return priorActionResults['Enter Details']['title'] == \"Logged In Successfully\"" }, "position": { "x": 44, "y": 190 }, "style": { "backgroundColor": "#ff0072", "color": "white" }, "width": 312, "height": 153, "selected": false, "dragging": false, "positionAbsolute": { "x": 44, "y": 190 } }, { "id": "3", "type": "textUpdater", "data": { "nodeId": 3, "activationTask": { "taskType": "SeleniumUI", "taskProps": { "httpMethod": "GET", "httpAddress": "", "steps": [{ "locator": "#username", "action": "send_keys", "param": "xyz" }], "returns": [{ "name": "username", "locator": "#username" }] } }, "label": "Invalid username flow", "activationEligibilityDescription": "", "activationEligibility": "return priorActionResults['Enter Details']['title'] == \"Your username is invalid!\"" }, "position": { "x": 421, "y": 180 }, "style": { "backgroundColor": "#ff0072", "color": "white" }, "width": 312, "height": 153, "selected": true, "positionAbsolute": { "x": 421, "y": 180 }, "dragging": false }], "edges": [{ "source": "1", "sourceHandle": "a", "target": "2", "targetHandle": null, "id": "reactflow__edge-1a-2" }, { "source": "1", "sourceHandle": "a", "target": "3", "targetHandle": null, "id": "reactflow__edge-1a-3" }]
     }
   }
 
@@ -1109,6 +1114,7 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex, isExpec
   const [diagramsModalOpen, setDiagramsModalOpen] = useState(false)
 
   const [expectedTestDataToNodeMap, setExpectedTestDataToNodeMap] = useState({})
+  const [nodesExecutedForTestData, setNodesExecutedForTestData] = useState({})
   // const [evaluationResponse, setEvaluationResponse] = useState({})
 
   useEffect(() => {
@@ -1146,13 +1152,28 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex, isExpec
         console.log(`Evaluation response: ${JSON.stringify(eventData)}`)
 
         const nodeOutputToTestData = convertToNodeIdToTestDataResult(eventData['test_data_to_node_output'])
+        setNodesExecutedForTestData(origNodesExecutedForTestData => {
+          let newNodesExecutedForCurrTestData = []
+
+          Object.keys(eventData['test_data_to_node_output']).forEach(testData => {
+            console.log(`curr testData being processed from test_data_to_node_output: ${testData}`)
+            if (!origNodesExecutedForTestData[testData]) {
+              origNodesExecutedForTestData[testData] = []
+            }
+            newNodesExecutedForCurrTestData = [...origNodesExecutedForTestData[testData], Object.keys(eventData['test_data_to_node_output'][testData])].flat()
+            origNodesExecutedForTestData[testData] = newNodesExecutedForCurrTestData
+          })
+
+          return origNodesExecutedForTestData
+        })
 
         // setEvaluationResponse(eventData)
         setNodes((prevNodes) => {
           const newNodes = prevNodes.map(node => {
             if (eventData['nodes_visited'].includes(node.id)) {
-              const changedStyle = { ...node.style, 'backgroundColor': '#3bb143' }
+              const changedStyle = { ...node.style, 'backgroundColor': EXECUTED_NODE_COLOR }
               node.data.output = nodeOutputToTestData[node.id] //Get all testdata outputs for this nodeId
+              node.data.isExecuted = true
               console.log(`updated node: ${JSON.stringify(node)}`)
               return { ...node, 'style': changedStyle }
             }
@@ -1230,6 +1251,43 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex, isExpec
   //   }
   // }, [selectedTestDataIndex])
 
+  // Setting node color depending on whether currently executed test data led to node being executed
+  useEffect(() => {
+
+    console.log(`testData: ${JSON.stringify(testData)}`)
+    console.log(`selectedTestDataIndex: ${selectedTestDataIndex}`)
+    const selectedTestDataObj = testData[selectedTestDataIndex]
+    console.log(`selectedTestDataObj: ${JSON.stringify(selectedTestDataObj)}`)
+    console.log(`nodesExecutedForTestData: ${JSON.stringify(nodesExecutedForTestData)}`)
+    if (selectedTestDataObj) {
+      let selectedTestData = selectedTestDataObj.value
+      //Convert selectedTestData to a string with keys having single quotes and query for the string on the nodesExecutedForTestData map
+      selectedTestData = convertObjectStringToSingleQuotesString(selectedTestData)
+      console.log(`selectedTestData: ${selectedTestData}`)
+      
+      setNodes((prevNodes) => {
+
+        const newNodes = prevNodes.map(node => {
+          let nodeBackgroundColor = UNEXECUTED_NODE_COLOR
+          if (node.data.isExecuted) {
+            nodeBackgroundColor = EXECUTED_NODE_COLOR
+          }
+          if (nodesExecutedForTestData[selectedTestData] && nodesExecutedForTestData[selectedTestData].includes(node.id)) {
+            console.log(`Testdata: ${selectedTestData} executes node with id: ${node.id}, changing node color to: ${TEST_DATA_EXECUTED_NODE_COLOR}`)
+            nodeBackgroundColor = TEST_DATA_EXECUTED_NODE_COLOR
+          }
+
+          const changedStyle = { ...node.style, 'backgroundColor': nodeBackgroundColor }
+          const nodeWithNewStyle = { ...node, 'style': changedStyle }
+          console.log(`updated node for test data selection: ${JSON.stringify(nodeWithNewStyle)}`)
+          return nodeWithNewStyle
+        })
+        return newNodes
+      })
+    }
+
+  }, [selectedTestDataIndex])
+
   function performNodeSelectionTasks(selectedNodeFullObject) {
     setCurrSelectedNode(selectedNodeFullObject)
 
@@ -1277,9 +1335,9 @@ function Diagram({ socketOpen, testData, envData, selectedTestDataIndex, isExpec
       return [...prevNodes, {
         id: `${prevNodes.length + 1}`,
         type: 'textUpdater',
-        data: { nodeId: prevNodes.length + 1, activationTask: { taskType: "HttpAPI", taskProps: { httpMethod: "GET", httpAddress: "" } } },
+        data: { nodeId: prevNodes.length + 1, activationTask: { taskType: "HttpAPI", taskProps: { httpMethod: "GET", httpAddress: "" } }, isExecuted: false },
         position: nodePosition,
-        style: { backgroundColor: '#ff0072', color: 'white' }
+        style: { backgroundColor: UNEXECUTED_NODE_COLOR, color: 'white' }
       }]
     })
   }

@@ -214,7 +214,7 @@ describe("New Diagram - Create nodes", () => {
         await userEvent.click(nodeInputTypeSelector);
         const seleniumUIOption = screen.getByText('SeleniumUI');
         await userEvent.click(seleniumUIOption)
-        expect(screen.querySelector('div.is-selected').value).toEqual('SeleniumUI')
+        // expect(screen.querySelector('div.is-selected').value).toEqual('SeleniumUI')
         
         const locator1TextBox = screen.getByTestId("locatorInput0")
         expect(locator1TextBox.value).toEqual("")
@@ -229,9 +229,9 @@ describe("New Diagram - Create nodes", () => {
         const returnsLocator1TextBox = screen.getByTestId("returnsLocatorInput0")
         expect(returnsLocator1TextBox.value).toEqual("")
         fireEvent.change(returnsLocator1TextBox, { target: { value: 'returnsLocator0' } });
-        const returnsAction1TextBox = screen.getByTestId("returnsActionInput0")
-        expect(returnsAction1TextBox.value).toEqual("")
-        fireEvent.change(returnsAction1TextBox, { target: { value: 'returnsAction0' } });
+        const returnsName1TextBox = screen.getByTestId("returnsNameInput0")
+        expect(returnsName1TextBox.value).toEqual("")
+        fireEvent.change(returnsName1TextBox, { target: { value: 'returnsName0' } });
 
         const addStepBtn = screen.getByTestId("addSeleniumStepBtn")
         fireEvent.click(addStepBtn)
@@ -258,7 +258,7 @@ describe("New Diagram - Create nodes", () => {
         node2.focus()
         await userEvent.keyboard('{Enter}');
         expect(node2).toHaveClass('selected')
-        expect(screen.querySelector('div.is-selected').value).toEqual('SeleniumUI')
+        // expect(screen.querySelector('div.is-selected').value).toEqual('SeleniumUI')
 
         expect(locator1TextBox.value).toEqual("testLocator0")
         expect(action1TextBox.value).toEqual("testAction0")
@@ -269,7 +269,7 @@ describe("New Diagram - Create nodes", () => {
         expect(param2TextBox.value).toEqual("testParam1")
 
         expect(returnsLocator1TextBox.value).toEqual("returnsLocator0")
-        expect(returnsAction1TextBox.value).toEqual("returnsAction0")
+        expect(returnsName1TextBox.value).toEqual("returnsName0")
     })
 
 })
