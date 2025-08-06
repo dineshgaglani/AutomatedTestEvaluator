@@ -1,4 +1,20 @@
 # AutomatedTestEvaluator
+Project to execute UML tests on AWS Device Farm.
+
+Steps:
+1. Create desired UML
+2. Provide test data the UML will be executed with
+3. Fill in steps as either python code or [locator, action] pairs on each UML nod
+4. Fill in boolean function that decides whether the step will be executed.
+
+Example Use case:
+For a login scenario the test data can be {"username": "valid", "password": "valid", "testtype": "positive"}, {"username": "valid", "password": "valid", "testtype": "negative"} 
+The UML will be "enter login credentials" and will branch into "validate user logged in" and "validate error message"
+The steps for the first node will be locator: input[name="username"], action: type(testdata["username"]) , same for password, the steps for the branched nodes will be validating some user interface element
+The boolean function for the first node will be "return true", the validate user logged in will be "return testdata["testtype"] == "positive"" and negative for the validate error message
+The test executes as separate instances for each test data and provides result as green node or red node depending on whether checks pass/fail.
+
+
 Automatically validates test data
 
 Run Jupyter notebooks on lorenzomartino/graphviz-jupyter docker image
